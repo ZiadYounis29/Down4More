@@ -1,0 +1,227 @@
+@if (variant() === 'small') {
+  <!-- Small variant: compact row with progress bar -->
+  <div class="di-small">
+    @if (selectable()) {
+      <d4m-checkbox [(value)]="selected" [label]="item().title" />
+    }
+    <div class="di-small__thumb">
+      <d4m-thumb-box [src]="item().thumbnailUrl" size="row" [alt]="item().title" />
+    </div>
+    <div class="di-small__content">
+      <div class="di-small__titlerow">
+        <p class="di-small__title" [title]="item().title">{{ item().title }}</p>
+        @if (item().status === 'downloading' || item().status === 'paused' || item().status === 'processing') {
+          <span class="di-small__percent">{{ clampedProgress() }}%</span>
+        }
+      </div>
+
+      @if (isProcessing()) {
+        <div class="di-small__bar">
+          <div class="di-small__bar-fill di-small__bar-fill--processing" style="width: 100%"></div>
+        </div>
+        <div class="di-small__meta">Processing…</div>
+      } @else if (item().status === 'downloading' || item().status === 'paused') {
+        <div class="di-small__bar">
+          <div class="di-small__bar-fill" [style.width]="clampedProgress() + '%'"></div>
+        </div>
+        <!-- Full meta -->
+        <div class="di-small__meta di-small__meta--full">
+          <span>{{ displaySpeed() }}</span>
+          <span>{{ displayProgress() }}</span>
+          <span>ETA {{ displayEta() }}</span>
+        </div>
+        <!-- Compact meta -->
+        <div class="di-small__meta di-small__meta--compact">
+          <span>{{ displaySpeed() }}</span>
+          <span>ETA {{ displayEta() }}</span>
+        </div>
+      } @else if (item().status === 'queued') {
+        <div class="di-small__meta">Queued</div>
+      } @else if (item().status === 'done') {
+        <div class="di-small__meta">Done</div>
+      } @else if (item().status === 'failed') {
+        <div class="di-small__meta" role="alert">{{ item().error ?? 'Failed' }}</div>
+      }
+    </div>
+
+    <div class="di-small__actions">
+      @if (canPause()) {
+        <button type="button" class="btn btn--icon btn--sm"
+          [attr.aria-label]="'Pause ' + item().title"
+          [title]="'Pause ' + item().title"
+          (click)="emit('pause')">
+          <d4m-icon name="pause" [size]="14" />
+        </button>
+      }
+      @if (canResume()) {
+        <button type="button" class="btn btn--icon btn--sm"
+          [attr.aria-label]="'Resume ' + item().title"
+          (click)="emit('resume')">
+          <d4m-icon name="play" [size]="14" />
+        </button>
+      }
+      @if (canCancel()) {
+        <button type="button" class="btn btn--icon btn--sm"
+          [attr.aria-label]="'Cancel ' + item().title"
+          (click)="emit('cancel')">
+          <d4m-icon name="x" [size]="14" />
+        </button>
+      }
+      @if (canRetry()) {
+        <button type="button" class="btn btn--icon btn--sm"
+          [attr.aria-label]="'Retry ' + item().title"
+          (click)="emit('retry')">
+          <d4m-icon name="retry" [size]="14" />
+        </button>
+      }
+      @if (canDismiss()) {
+        <button type="button" class="btn btn--icon btn--sm"
+          aria-label="Dismiss"
+          (click)="emit('dismiss')">
+          <d4m-icon name="x" [size]="14" />
+        </button>
+      }
+    </div>
+  </div>
+
+} @else if (variant() === 'big') {
+  <!-- Big variant: details panel content -->
+  <div class="di-big">
+    <div class="di-big__preview">
+      <d4m-thumb-box [src]="item().thumbnailUrl" size="preview" [alt]="item().title" />
+    </div>
+    <div class="di-big__info-row">
+      <div class="di-big__info-left">
+        <p class="di-big__title" [title]="item().title">{{ item().title }}</p>
+        @if (item().channelName) {
+          <p class="di-big__channel">{{ item().channelName }}</p>
+        }
+      </div>
+      <div class="di-big__table">
+        <div class="di-big__table-row">
+          <span class="di-big__table-label">Quality</span>
+          <span class="di-big__table-value">{{ displayQuality() }}</span>
+        </div>
+        <div class="di-big__table-row">
+          <span class="di-big__table-label">Format</span>
+          <span class="di-big__table-value">{{ displayFormat() }}</span>
+        </div>
+        @if (item().settings.bitrate) {
+          <div class="di-big__table-row">
+            <span class="di-big__table-label">Bit-rate</span>
+            <span class="di-big__table-value">{{ item().settings.bitrate }} kbps</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="di-big__stats">
+      @if (isProcessing()) {
+        <p class="di-big__percent">Processing…</p>
+      } @else {
+        <p class="di-big__percent">{{ clampedProgress() }}%</p>
+      }
+      <p class="di-big__speed">{{ displaySpeed() }} &nbsp;·&nbsp; {{ displayProgress() }} &nbsp;·&nbsp; ETA {{ displayEta() }}</p>
+    </div>
+
+    <div class="di-big__bar-row">
+      <div class="di-big__bar">
+        <div class="di-big__bar-fill" [class.di-big__bar-fill--processing]="isProcessing()"
+          [style.width]="isProcessing() ? '100%' : clampedProgress() + '%'"
+          role="progressbar"
+          [attr.aria-valuenow]="clampedProgress()"
+          [attr.aria-label]="'Progress of ' + item().title">
+        </div>
+      </div>
+      <div class="di-big__actions">
+        @if (canPause()) {
+          <button type="button" class="btn btn--icon btn--sm"
+            [attr.aria-label]="'Pause ' + item().title"
+            (click)="emit('pause')">
+            <d4m-icon name="pause" [size]="14" />
+          </button>
+        }
+        @if (canResume()) {
+          <button type="button" class="btn btn--icon btn--sm"
+            [attr.aria-label]="'Resume ' + item().title"
+            (click)="emit('resume')">
+            <d4m-icon name="play" [size]="14" />
+          </button>
+        }
+        @if (canCancel()) {
+          <button type="button" class="btn btn--icon btn--sm"
+            [attr.aria-label]="'Cancel ' + item().title"
+            (click)="emit('cancel')">
+            <d4m-icon name="x" [size]="14" />
+          </button>
+        }
+        @if (canDismiss()) {
+          <button type="button" class="btn btn--icon btn--sm"
+            aria-label="Dismiss"
+            (click)="emit('dismiss')">
+            <d4m-icon name="x" [size]="14" />
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+} @else {
+  <!-- History variant: solid green/red row -->
+  <div class="di-history" [style]="rowStyle()">
+    <d4m-thumb-box [src]="item().thumbnailUrl" size="row" [alt]="item().title" [bordered]="false" />
+
+    <div class="di-history__content">
+      <p class="di-history__title" [title]="item().title">{{ item().title }}</p>
+      <p class="di-history__date">{{ displayDate() }}</p>
+    </div>
+
+    <div class="di-history__meta">
+      <div class="di-history__meta-col">
+        <span class="di-history__meta-label">Quality</span>
+        <span class="di-history__meta-value">{{ displayQuality() }}</span>
+      </div>
+      <div class="di-history__meta-divider di-history__meta-divider--format"></div>
+      <div class="di-history__meta-col di-history__meta-col--format">
+        <span class="di-history__meta-label">Format</span>
+        <span class="di-history__meta-value">{{ displayFormat() }}</span>
+      </div>
+      <div class="di-history__meta-divider"></div>
+      <div class="di-history__meta-col">
+        <span class="di-history__meta-label">Size</span>
+        <span class="di-history__meta-value">{{ displaySize() }}</span>
+      </div>
+    </div>
+
+    <!-- Status chip -->
+    <div class="di-history__chip" [style.color]="isHistoryOk() ? 'var(--color-history-ok)' : 'var(--color-history-err)'">
+      @if (item().status === 'done') {
+        <span class="di-history__chip-text">Succeeded</span>
+      } @else {
+        <span class="di-history__chip-text"
+          [title]="item().error ?? ''"
+          [attr.aria-label]="'Failed: ' + (item().error ?? '')">
+          Failed<span class="visually-hidden">: {{ item().error ?? '' }}</span>
+        </span>
+      }
+    </div>
+
+    <!-- Action buttons -->
+    <div class="di-history__actions">
+      @if (canRetry()) {
+        <button type="button" class="btn btn--icon btn--sm btn--on-color"
+          [attr.aria-label]="'Retry ' + item().title"
+          (click)="emit('retry')">
+          <d4m-icon name="retry" [size]="15" />
+        </button>
+      }
+      @if (canRemove()) {
+        <button type="button" class="btn btn--icon btn--sm btn--on-color"
+          [attr.aria-label]="'Remove ' + item().title + ' from history'"
+          (click)="emit('remove')">
+          <d4m-icon name="x" [size]="14" [stroke]="2.6" />
+        </button>
+      }
+    </div>
+  </div>
+}
