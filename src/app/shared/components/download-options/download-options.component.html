@@ -1,0 +1,74 @@
+<!-- DOM order: captions, mode, quality, format, bitrate (spec §6.4) -->
+
+@if (!isHidden()('captions')) {
+  <d4m-panel
+    label="Captions"
+    [class]="contentsMode() ? 'area-captions' : ''"
+    [style.grid-area]="contentsMode() ? 'captions' : null"
+  >
+    <d4m-captions
+      [value]="settings().captions"
+      (valueChange)="onCaptions($event)"
+      [disabled]="disabled()"
+      [lockSeparate]="audioOnly()"
+    />
+  </d4m-panel>
+}
+
+@if (!isHidden()('mode')) {
+  <d4m-panel
+    [class]="contentsMode() ? 'area-mode' : ''"
+    [style.grid-area]="contentsMode() ? 'mode' : null"
+  >
+    <d4m-video-audio-select
+      [value]="settings().mode"
+      (valueChange)="onMode($event)"
+      [disabled]="disabled()"
+    />
+  </d4m-panel>
+}
+
+@if (!isHidden()('quality')) {
+  <d4m-panel
+    label="Quality"
+    [class]="contentsMode() ? 'area-quality' : ''"
+    [style.grid-area]="contentsMode() ? 'quality' : null"
+  >
+    <d4m-quality
+      [value]="settings().quality"
+      (valueChange)="onQuality($event)"
+      [options]="catalog().qualities"
+      [disabled]="disabled() || audioOnly()"
+    />
+  </d4m-panel>
+}
+
+@if (!isHidden()('format')) {
+  <d4m-panel
+    label="Format"
+    [class]="contentsMode() ? 'area-format' : ''"
+    [style.grid-area]="contentsMode() ? 'format' : null"
+  >
+    <d4m-format
+      [value]="settings().format"
+      (valueChange)="onFormat($event)"
+      [options]="formatOptions()"
+      [disabled]="disabled()"
+    />
+  </d4m-panel>
+}
+
+@if (!isHidden()('bitrate')) {
+  <d4m-panel
+    label="Bit-rate"
+    [class]="contentsMode() ? 'area-bitrate' : ''"
+    [style.grid-area]="contentsMode() ? 'bitrate' : null"
+  >
+    <d4m-bitrate
+      [value]="settings().bitrate"
+      (valueChange)="onBitrate($event)"
+      [options]="catalog().bitrates"
+      [disabled]="disabled() || videoOnly()"
+    />
+  </d4m-panel>
+}

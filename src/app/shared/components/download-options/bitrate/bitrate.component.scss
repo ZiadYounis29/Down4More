@@ -1,0 +1,27 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.native-sel {
+  width: 100%;
+  height: var(--control-height);
+  padding: 0 14px;
+  border: var(--field-border);
+  border-radius: var(--radius-control);
+  background: var(--field-bg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
