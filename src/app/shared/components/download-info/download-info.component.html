@@ -16,14 +16,20 @@
       </div>
 
       @if (isProcessing()) {
-        <div class="di-small__bar">
-          <div class="di-small__bar-fill di-small__bar-fill--processing" style="width: 100%"></div>
-        </div>
+        <d4m-progress-bar
+          class="di-small__bar"
+          [value]="100"
+          variant="processing"
+          [label]="'Progress of ' + item().title"
+        />
         <div class="di-small__meta">Processing…</div>
       } @else if (item().status === 'downloading' || item().status === 'paused') {
-        <div class="di-small__bar">
-          <div class="di-small__bar-fill" [style.width]="clampedProgress() + '%'"></div>
-        </div>
+        <d4m-progress-bar
+          class="di-small__bar"
+          [value]="clampedProgress()"
+          variant="default"
+          [label]="'Progress of ' + item().title"
+        />
         <!-- Full meta -->
         <div class="di-small__meta di-small__meta--full">
           <span>{{ displaySpeed() }}</span>
@@ -125,14 +131,12 @@
     </div>
 
     <div class="di-big__bar-row">
-      <div class="di-big__bar">
-        <div class="di-big__bar-fill" [class.di-big__bar-fill--processing]="isProcessing()"
-          [style.width]="isProcessing() ? '100%' : clampedProgress() + '%'"
-          role="progressbar"
-          [attr.aria-valuenow]="clampedProgress()"
-          [attr.aria-label]="'Progress of ' + item().title">
-        </div>
-      </div>
+      <d4m-progress-bar
+        class="di-big__bar"
+        [value]="isProcessing() ? 100 : clampedProgress()"
+        [variant]="isProcessing() ? 'processing' : 'default'"
+        [label]="'Progress of ' + item().title"
+      />
       <div class="di-big__actions">
         @if (canPause()) {
           <button type="button" class="btn btn--icon btn--sm"
