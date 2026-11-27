@@ -20,6 +20,7 @@ import {
 import {
   DownloadAction,
   DownloadItem,
+  DownloadOptionsCatalog,
   DownloadRequest,
   DownloadSettings,
   FetchFailure,

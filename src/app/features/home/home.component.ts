@@ -21,6 +21,7 @@ import { MAX_LINKS, UrlEntry } from './url-entry.model';
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, LogoComponent, PageContainerComponent, UrlBarComponent, UrlListComponent],
 })
 export class HomeComponent {
   private readonly parser = inject(UrlParserService);
