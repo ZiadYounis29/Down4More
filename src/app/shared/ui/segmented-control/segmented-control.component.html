@@ -1,0 +1,13 @@
+<div class="group" role="group" [attr.aria-label]="label() || null">
+  @for (option of options(); track $index) {
+    <button
+      type="button"
+      class="pill"
+      [attr.aria-pressed]="value() === option.value"
+      [disabled]="disabled() || !!option.disabled"
+      (click)="select(option)"
+    >
+      {{ option.label }}
+    </button>
+  }
+</div>
