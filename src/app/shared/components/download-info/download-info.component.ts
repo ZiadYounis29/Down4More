@@ -10,9 +10,8 @@ import { DownloadActionEvent, DownloadItem, DownloadStatus } from '@core/models'
 import { formatEta, formatSize, formatSpeed, formatWhen } from '@core/utils';
 import { CheckboxComponent } from '@shared/ui/checkbox';
 import { IconComponent } from '@shared/ui/icon';
+import { ProgressBarComponent } from '@shared/ui/progress-bar';
 import { ThumbBoxComponent } from '@shared/ui/thumb-box';
-// UNRESOLVED IMPORT: ProgressBarComponent will be provided by P2
-// import { ProgressBarComponent } from '@shared/ui/progress-bar';
 
 @Component({
   selector: 'd4m-download-info',
@@ -22,8 +21,8 @@ import { ThumbBoxComponent } from '@shared/ui/thumb-box';
   imports: [
     CheckboxComponent,
     IconComponent,
+    ProgressBarComponent,
     ThumbBoxComponent,
-    // ProgressBarComponent — unresolved until P2 merges
   ],
 })
 export class DownloadInfoComponent {
