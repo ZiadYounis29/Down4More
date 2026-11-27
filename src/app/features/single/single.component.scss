@@ -1,0 +1,135 @@
+@use 'styles/breakpoints' as *;
+
+.single {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  grid-template-areas:
+    'info info name name'
+    'info info captions captions'
+    'quality format mode mode'
+    'framesize bitrate download download'
+    'trim . . .';
+
+  &.fs-on {
+    grid-template-areas:
+      'info info name name'
+      'info info captions captions'
+      'quality format mode mode'
+      'framesize framesize bitrate download'
+      'trim . . .';
+  }
+
+  &.trim-on {
+    grid-template-areas:
+      'info info name name'
+      'info info captions captions'
+      'quality format mode mode'
+      'framesize bitrate download download'
+      'trim trim trim trim';
+  }
+
+  &.fs-on.trim-on {
+    grid-template-areas:
+      'info info name name'
+      'info info captions captions'
+      'quality format mode mode'
+      'framesize framesize bitrate download'
+      'trim trim trim trim';
+  }
+}
+
+.a-info {
+  grid-area: info;
+}
+
+.a-name {
+  grid-area: name;
+}
+
+.a-framesize {
+  grid-area: framesize;
+}
+
+.a-trim {
+  grid-area: trim;
+}
+
+.a-download {
+  grid-area: download;
+  justify-self: end;
+  align-self: center;
+}
+
+.fs-on .a-framesize {
+  align-self: start;
+}
+
+.fs-on .area-bitrate,
+.fs-on .a-download {
+  align-self: start;
+}
+
+@include compact {
+  .single {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'info info'
+      'name name'
+      'captions captions'
+      'mode mode'
+      'quality format'
+      'framesize bitrate'
+      'trim .'
+      '. download';
+
+    &.fs-on {
+      grid-template-areas:
+        'info info'
+        'name name'
+        'captions captions'
+        'mode mode'
+        'quality format'
+        'bitrate .'
+        'framesize framesize'
+        'trim .'
+        '. download';
+    }
+
+    &.trim-on {
+      grid-template-areas:
+        'info info'
+        'name name'
+        'captions captions'
+        'mode mode'
+        'quality format'
+        'framesize bitrate'
+        'trim trim'
+        '. download';
+    }
+
+    &.fs-on.trim-on {
+      grid-template-areas:
+        'info info'
+        'name name'
+        'captions captions'
+        'mode mode'
+        'quality format'
+        'bitrate .'
+        'framesize framesize'
+        'trim trim'
+        '. download';
+    }
+  }
+
+  .a-download {
+    justify-self: stretch;
+  }
+}
+
+.single__error {
+  margin-top: 12px;
+  color: var(--color-danger);
+  font-size: 13px;
+}
