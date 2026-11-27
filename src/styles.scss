@@ -1,0 +1,467 @@
+@use 'styles/breakpoints' as *;
+
+// ============================================================================
+// DESIGN TOKENS
+// ============================================================================
+
+// --- Light theme (default) ---
+:root,
+:root[data-theme='light'] {
+  // Colour tokens (4.2)
+  --color-bg: #FDF0F0;
+  --color-surface: #FFFFFF;
+  --color-text: #3B1620;
+  --color-text-muted: #7A4A55;
+  --color-primary: #7A1F3D;
+  --color-primary-dark: #491325;
+  --color-accent: #D51423;
+  --color-accent-dark: #8a0d17;
+  --color-action-bg: #D51423;
+  --color-action-fg: #FFFFFF;
+  --color-on-big-action: #FFFFFF;
+  --color-apply: #F2B705;
+  --color-apply-fg: #2B1D00;
+  --color-success: #1E7F4F;
+  --color-warning: var(--color-apply);
+  --color-danger: #A50D1A;
+  --color-border: #F0D3D6;
+  --color-selected: rgba(122, 31, 61, 0.07);
+  --shadow-card: 0 20px 50px rgba(22, 51, 95, 0.12);
+
+  // History tokens (4.2)
+  --color-history-ok: #2A8A55;
+  --color-history-ok-border: #2A8A55;
+  --color-history-ok-label: #D9F2E4;
+  --color-history-err: #CC3A4B;
+  --color-history-err-border: #CC3A4B;
+  --color-history-err-label: #FADCE0;
+  --color-on-history: #FFFFFF;
+
+  // Component tokens (4.3)
+  --field-border: 2px solid #7A1F3D;
+  --field-bg: transparent;
+  --pill-border: 2px solid #7A1F3D;
+  --pill-bg: transparent;
+  --pill-text: #7A1F3D;
+  --box-border: 2px solid #7A1F3D;
+  --box-bg: transparent;
+  --box-fg: #7A1F3D;
+
+  // Trim tokens (Single Style Notes 7)
+  --trim-rail: #7A1F3D;
+  --trim-track: #7A1F3D;
+  --trim-add-bg: transparent;
+  --trim-add-border: 2px solid #7A1F3D;
+  --trim-add-fg: #7A1F3D;
+  --trim-preview-border: 2px solid #7A1F3D;
+  --trim-preview-fg: #7A1F3D;
+
+  // Logo tokens (4.2)
+  --logo-primary: var(--color-primary);
+  --logo-primary-dark: var(--color-primary-dark);
+  --logo-accent: var(--color-accent);
+  --logo-accent-dark: var(--color-accent-dark);
+
+  // Size / radius / type tokens (4.4)
+  --radius-card: 28px;
+  --radius-panel: 18px;
+  --radius-big-btn: 16px;
+  --radius-control: 12px;
+  --radius-icon-btn: 10px;
+  --radius-pill: 999px;
+  --row-height: 82px;
+  --row-gap: 10px;
+  --control-height: 42px;
+  --font-body: Manrope, system-ui, sans-serif;
+}
+
+// --- Dark theme ---
+:root[data-theme='dark'] {
+  // Colour tokens (4.2)
+  --color-bg: #111418;
+  --color-surface: #1A1F26;
+  --color-text: #E6EAF0;
+  --color-text-muted: #9AA5B4;
+  --color-primary: #5EC8FF;
+  --color-primary-dark: #387899;
+  --color-accent: #FF5C6C;
+  --color-accent-dark: #a63c46;
+  --color-action-bg: #FF5C6C;
+  --color-action-fg: #1E0508;
+  --color-on-big-action: #000000;
+  --color-apply: #FFD84D;
+  --color-apply-fg: #2B1D00;
+  --color-success: #5FD38D;
+  --color-warning: var(--color-apply);
+  --color-danger: #FF8C97;
+  --color-border: #43484E;
+  --color-selected: rgba(94, 200, 255, 0.09);
+  --shadow-card: 0 20px 50px rgba(0, 0, 0, 0.45);
+
+  // History tokens (4.2)
+  --color-history-ok: #1F7347;
+  --color-history-ok-border: #2F8F5E;
+  --color-history-ok-label: #CDEBDA;
+  --color-history-err: #B02D3E;
+  --color-history-err-border: #C84557;
+  --color-history-err-label: #F5CDD3;
+  --color-on-history: #FFFFFF;
+
+  // Component tokens (4.3)
+  --field-border: 1px solid #43484E;
+  --field-bg: #1A1F26;
+  --pill-border: 2px solid #43484E;
+  --pill-bg: #1A1F26;
+  --pill-text: #E6EAF0;
+  --box-border: 1px solid #43484E;
+  --box-bg: #1A1F26;
+  --box-fg: #9AA5B4;
+
+  // Trim tokens (Single Style Notes 7)
+  --trim-rail: #43484E;
+  --trim-track: #43484E;
+  --trim-add-bg: #1A1F26;
+  --trim-add-border: 2px solid #43484E;
+  --trim-add-fg: #E6EAF0;
+  --trim-preview-border: none;
+  --trim-preview-fg: #9AA5B4;
+
+  // Logo tokens (4.2)
+  --logo-primary: var(--color-primary);
+  --logo-primary-dark: var(--color-primary-dark);
+  --logo-accent: var(--color-accent);
+  --logo-accent-dark: var(--color-accent-dark);
+}
+
+// --- System preference fallback ---
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-bg: #111418;
+    --color-surface: #1A1F26;
+    --color-text: #E6EAF0;
+    --color-text-muted: #9AA5B4;
+    --color-primary: #5EC8FF;
+    --color-primary-dark: #387899;
+    --color-accent: #FF5C6C;
+    --color-accent-dark: #a63c46;
+    --color-action-bg: #FF5C6C;
+    --color-action-fg: #1E0508;
+    --color-on-big-action: #000000;
+    --color-apply: #FFD84D;
+    --color-apply-fg: #2B1D00;
+    --color-success: #5FD38D;
+    --color-warning: var(--color-apply);
+    --color-danger: #FF8C97;
+    --color-border: #43484E;
+    --color-selected: rgba(94, 200, 255, 0.09);
+    --shadow-card: 0 20px 50px rgba(0, 0, 0, 0.45);
+
+    --color-history-ok: #1F7347;
+    --color-history-ok-border: #2F8F5E;
+    --color-history-ok-label: #CDEBDA;
+    --color-history-err: #B02D3E;
+    --color-history-err-border: #C84557;
+    --color-history-err-label: #F5CDD3;
+    --color-on-history: #FFFFFF;
+
+    --field-border: 1px solid #43484E;
+    --field-bg: #1A1F26;
+    --pill-border: 2px solid #43484E;
+    --pill-bg: #1A1F26;
+    --pill-text: #E6EAF0;
+    --box-border: 1px solid #43484E;
+    --box-bg: #1A1F26;
+    --box-fg: #9AA5B4;
+
+    --trim-rail: #43484E;
+    --trim-track: #43484E;
+    --trim-add-bg: #1A1F26;
+    --trim-add-border: 2px solid #43484E;
+    --trim-add-fg: #E6EAF0;
+    --trim-preview-border: none;
+    --trim-preview-fg: #9AA5B4;
+
+    --logo-primary: var(--color-primary);
+    --logo-primary-dark: var(--color-primary-dark);
+    --logo-accent: var(--color-accent);
+    --logo-accent-dark: var(--color-accent-dark);
+  }
+}
+
+// ============================================================================
+// GLOBAL RESETS
+// ============================================================================
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+// ============================================================================
+// FOCUS RING (4.7)
+// ============================================================================
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+// ============================================================================
+// BUTTONS (4.5)
+// ============================================================================
+
+// --- Base ---
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 22px;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text);
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  transition: filter 0.15s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+
+  &:disabled,
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+// --- Size modifiers ---
+.btn--sm {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn--lg {
+  height: 72px;
+  padding: 0 24px;
+  min-width: 180px;
+  border-radius: var(--radius-big-btn);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+// --- Variant: primary (Fetch, Download) ---
+.btn--primary {
+  background: var(--color-action-bg);
+  color: var(--color-action-fg);
+
+  &.btn--lg {
+    color: var(--color-on-big-action);
+  }
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+
+  &:active {
+    filter: brightness(0.94);
+  }
+}
+
+// --- Variant: apply (amber Apply button) ---
+.btn--apply {
+  background: var(--color-apply);
+  color: var(--color-apply-fg);
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+
+  &:active {
+    filter: brightness(0.94);
+  }
+}
+
+// --- Variant: secondary (outline primary) ---
+.btn--secondary {
+  background: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+// --- Variant: ghost (toolbar, select-all) ---
+.btn--ghost {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+
+  &:hover {
+    border-color: var(--color-primary);
+  }
+
+  &[aria-pressed='true'] {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-bg);
+  }
+}
+
+// --- Variant: danger (remove x on Home, cancel icon) ---
+.btn--danger {
+  color: var(--color-danger);
+
+  &.btn--icon {
+    color: var(--color-accent);
+  }
+}
+
+// --- Variant: icon (square icon button) ---
+.btn--icon {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: var(--radius-icon-btn);
+  background: var(--box-bg);
+  border: var(--box-border);
+  color: var(--box-fg);
+
+  &.btn--sm {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+  }
+}
+
+// --- Variant: circle (plus/add button) ---
+.btn--circle {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+// --- Variant: block (full width) ---
+.btn--block {
+  display: flex;
+  width: 100%;
+}
+
+// --- Variant: on-color (History rows) ---
+.btn--on-color {
+  background: transparent;
+  border: 2px solid var(--color-on-history);
+  color: var(--color-on-history);
+
+  &:hover {
+    background: var(--color-on-history);
+    color: var(--row-bg, var(--color-bg));
+  }
+}
+
+// --- Loading state ---
+.btn--loading {
+  pointer-events: none;
+  position: relative;
+  color: transparent !important;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: btn-spin 0.6s linear infinite;
+    // Restore visibility of the spinner
+    color: var(--color-text);
+  }
+
+  &.btn--primary::after {
+    color: var(--color-action-fg);
+  }
+
+  &.btn--primary.btn--lg::after {
+    color: var(--color-on-big-action);
+  }
+
+  &.btn--apply::after {
+    color: var(--color-apply-fg);
+  }
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ============================================================================
+// PILLS (4.5 rows 7, 8)
+// ============================================================================
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 18px;
+  border: var(--pill-border);
+  border-radius: var(--radius-pill);
+  background: var(--pill-bg);
+  color: var(--pill-text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &[aria-pressed='true'] {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-bg);
+  }
+
+  &:disabled,
+  &[disabled] {
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+}
+
+// ============================================================================
+// VISUALLY HIDDEN (4.8)
+// ============================================================================
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

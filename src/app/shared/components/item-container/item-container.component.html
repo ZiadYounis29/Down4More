@@ -1,0 +1,75 @@
+@if (selectable()) {
+  <div class="header">
+    <button
+      type="button"
+      class="btn btn--sm btn--ghost"
+      [attr.aria-pressed]="allSelected()"
+      (click)="toggleSelectAll()"
+    >
+      {{ selectAllLabel() }}
+    </button>
+    <ng-content select="[toolbar]" />
+    <span class="summary" aria-live="polite">{{ summaryText() }}</span>
+  </div>
+}
+
+@if (items().length === 0) {
+  <div class="empty">
+    <ng-content select="[empty]" />
+  </div>
+} @else {
+  <div class="body" [style.height.px]="listHeight()">
+    @if (isScrollable()) {
+      <div #rail class="rail" aria-hidden="true" (click)="onTrackClick($event)">
+        <div class="rail__track"></div>
+        <div
+          class="rail__thumb"
+          [class.rail__thumb--dragging]="isDragging()"
+          [style.height.px]="scrollThumbHeight()"
+          [style.top.px]="6 + scrollThumbTop()"
+          (pointerdown)="onThumbPointerDown($event)"
+          (pointermove)="onThumbPointerMove($event)"
+          (pointerup)="onThumbPointerUp($event)"
+          (pointercancel)="onThumbPointerUp($event)"
+        ></div>
+      </div>
+    }
+
+    @if (virtualScroll()) {
+      <cdk-virtual-scroll-viewport
+        class="viewport"
+        [class.viewport--scrollable]="isScrollable()"
+        [itemSize]="itemSize()"
+        [style.height.px]="listHeight()"
+        (scroll)="onScroll()"
+      >
+        <div
+          *cdkVirtualFor="let item of items(); let i = index; trackBy: undefined"
+          class="row-wrap"
+          [style.height.px]="itemSize()"
+          [style.padding-bottom.px]="rowGap()"
+        >
+          @if (itemTemplate(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl.templateRef; context: rowContext(item, i)" />
+          }
+        </div>
+      </cdk-virtual-scroll-viewport>
+    } @else {
+      <div
+        #plainList
+        class="viewport viewport--plain"
+        [class.viewport--scrollable]="isScrollable()"
+        [style.height.px]="listHeight()"
+        (scroll)="onScroll()"
+      >
+        @for (item of items(); track itemId()(item); let i = $index) {
+          <div class="row-wrap" [style.height.px]="itemSize()" [style.padding-bottom.px]="rowGap()">
+            @if (itemTemplate(); as tpl) {
+              <ng-container *ngTemplateOutlet="tpl.templateRef; context: rowContext(item, i)" />
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

@@ -1,0 +1,13 @@
+<div
+  class="thumb"
+  [class.thumb--row]="size() === 'row'"
+  [class.thumb--single]="size() === 'single'"
+  [class.thumb--preview]="size() === 'preview'"
+  [class.thumb--borderless]="!bordered()"
+>
+  @if (showImage()) {
+    <img [src]="src()" [alt]="alt()" (error)="onImgError()" />
+  } @else {
+    <d4m-icon name="play" [size]="iconSize()" />
+  }
+</div>

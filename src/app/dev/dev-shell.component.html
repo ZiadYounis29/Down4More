@@ -1,0 +1,19 @@
+<div class="dev">
+  <nav class="dev__sidebar" aria-label="Component playground">
+    @for (group of groups; track group.name) {
+      <p class="dev__group-label">{{ group.name }}</p>
+      @for (entry of group.entries; track entry.id) {
+        <a
+          class="dev__tab"
+          [routerLink]="entry.id"
+          routerLinkActive="on"
+          [attr.aria-current]="null"
+          >{{ entry.label }}</a
+        >
+      }
+    }
+  </nav>
+  <div class="dev__content">
+    <router-outlet />
+  </div>
+</div>

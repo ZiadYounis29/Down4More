@@ -1,0 +1,31 @@
+@if (presentational()) {
+  <span
+    class="box"
+    [class.box--checked]="value() || indeterminate()"
+    [class.box--disabled]="disabled()"
+    aria-hidden="true"
+  >
+    @if (indeterminate()) {
+      <span class="dash"></span>
+    } @else if (value()) {
+      <d4m-icon name="check" [size]="14" [stroke]="3.2" />
+    }
+  </span>
+} @else {
+  <button
+    type="button"
+    role="checkbox"
+    class="box"
+    [class.box--checked]="value() || indeterminate()"
+    [attr.aria-checked]="indeterminate() ? 'mixed' : value()"
+    [attr.aria-label]="label() || null"
+    [disabled]="disabled()"
+    (click)="toggle()"
+  >
+    @if (indeterminate()) {
+      <span class="dash" aria-hidden="true"></span>
+    } @else if (value()) {
+      <d4m-icon name="check" [size]="14" [stroke]="3.2" />
+    }
+  </button>
+}

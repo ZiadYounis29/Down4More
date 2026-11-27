@@ -1,0 +1,23 @@
+<section
+  class="card"
+  [class.card--sm]="size() === 'sm'"
+  [class.card--md]="size() === 'md'"
+  [class.card--lg]="size() === 'lg'"
+  [class.card--pad-default]="padding() === 'default'"
+  [class.card--pad-split]="padding() === 'split'"
+  [class.card--pad-compact]="padding() === 'compact'"
+  [class.card--pad-none]="padding() === 'none'"
+>
+  <div class="card__header"><ng-content select="[header]" /></div>
+
+  @if (layout() === 'split') {
+    <div class="card__split">
+      <div class="card__main"><ng-content select="[main]" /></div>
+      <div class="card__side"><ng-content select="[side]" /></div>
+    </div>
+  } @else {
+    <div class="card__body"><ng-content /></div>
+  }
+
+  <div class="card__footer"><ng-content select="[footer]" /></div>
+</section>

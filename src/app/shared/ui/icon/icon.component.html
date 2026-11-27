@@ -1,0 +1,34 @@
+<svg
+  class="icon"
+  viewBox="0 0 24 24"
+  aria-hidden="true"
+  [attr.width]="size()"
+  [attr.height]="size()"
+  [attr.fill]="def().filled ? 'currentColor' : 'none'"
+  [attr.stroke]="def().filled ? 'none' : 'currentColor'"
+  [attr.stroke-width]="def().filled ? null : stroke()"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  @for (d of def().paths ?? []; track d) {
+    <path [attr.d]="d" />
+  }
+  @for (r of def().rects ?? []; track r.x) {
+    <rect
+      [attr.x]="r.x"
+      [attr.y]="r.y"
+      [attr.width]="r.width"
+      [attr.height]="r.height"
+      [attr.rx]="r.rx ?? 0"
+    />
+  }
+  @for (c of def().circles ?? []; track c.cx + '-' + c.cy) {
+    <circle
+      [attr.cx]="c.cx"
+      [attr.cy]="c.cy"
+      [attr.r]="c.r"
+      [attr.fill]="c.filled ? 'currentColor' : null"
+      [attr.stroke]="c.filled ? 'none' : null"
+    />
+  }
+</svg>

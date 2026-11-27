@@ -1,0 +1,2 @@
+$bp-compact: 720px;
+@mixin compact { @media (max-width: $bp-compact) { @content; } }
