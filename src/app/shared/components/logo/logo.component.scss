@@ -1,0 +1,44 @@
+:host {
+  display: inline-flex;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 800;
+}
+
+.logo__mark {
+  display: block;
+  width: auto;
+  aspect-ratio: 925 / 1070;
+}
+
+.logo--wordmark .logo__mark {
+  height: 0.95em;
+  margin: 0 0.05em; // overrides the inline height
+}
+
+.logo__down {
+  color: var(--logo-primary);
+}
+
+.logo__more {
+  color: var(--logo-accent);
+}
+
+.lb {
+  fill: var(--logo-primary);
+}
+
+.lbs {
+  fill: var(--logo-primary-dark);
+}
+
+.lr {
+  fill: var(--logo-accent);
+}
+
+.lrs {
+  fill: var(--logo-accent-dark);
+}
