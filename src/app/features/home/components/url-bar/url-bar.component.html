@@ -1,0 +1,35 @@
+<div class="url-bar" [class.focused]="false">
+  <button
+    type="button"
+    class="btn btn--circle"
+    [attr.aria-label]="'Add link'"
+    [disabled]="value().trim().length === 0 || loading()"
+    (click)="onAdd()"
+  >
+    <d4m-icon name="plus" [size]="20" [stroke]="2"></d4m-icon>
+  </button>
+
+  <input
+    type="text"
+    inputmode="url"
+    autocomplete="off"
+    spellcheck="false"
+    class="url-bar__input"
+    [attr.aria-label]="'Link'"
+    [placeholder]="'Paste a link to fetch'"
+    [disabled]="loading()"
+    [value]="value()"
+    (input)="value.set($event.target.value)"
+    (keydown.enter)="onAdd()"
+  />
+
+  <d4m-nav-buttons
+    size="md"
+    [buttons]="fetchButton()"
+    (pressed)="onFetch()"
+  ></d4m-nav-buttons>
+</div>
+
+@if (error()) {
+  <p class="url-bar__error" role="alert">{{ error() }}</p>
+}
