@@ -1,0 +1,43 @@
+<ul class="url-list" [class.two-col]="isTwoCol()">
+  @for (col of columnEntries(); track col) {
+    <div class="url-list__column">
+      @for (entry of col; track entry.id; let i = $index) {
+        <li class="url-list__row">
+          <span class="url-list__number">{{ globalIndex(col, i) }}</span>
+
+          @if (entry.failed) {
+            <d4m-tag variant="applied" [text]="'Couldn't load'" />
+          } @else {
+            <span class="url-list__chip">{{ typeLabel(entry.kind) }}</span>
+          }
+
+          <span class="url-list__url" [attr.title]="entry.url">{{ entry.url }}</span>
+
+          <button
+            type="button"
+            class="btn btn--danger"
+            [attr.aria-label]="'Remove link ' + globalIndex(col, i)"
+            [disabled]="disabled()"
+            (click)="onRemove(entry.id)"
+          >
+            <d4m-icon name="x" [size]="16" [stroke]="2.6" />
+          </button>
+        </li>
+      }
+    </div>
+  }
+</ul>
+
+@if (entries().length > 0) {
+  <footer class="url-list__footer">
+    <span class="url-list__count">{{ entries().length }} link{{ entries().length === 1 ? '' : 's' }}</span>
+    <button
+      type="button"
+      class="btn btn--sm btn--ghost"
+      [disabled]="disabled()"
+      (click)="onClear()"
+    >
+      Clear all
+    </button>
+  </footer>
+}

@@ -1,0 +1,34 @@
+.url-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--color-primary);
+
+  &:focus-within {
+    border-bottom-color: var(--color-accent);
+  }
+}
+
+.url-bar__input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 20px;
+  height: 44px;
+  min-width: 0;
+  color: var(--color-text);
+  outline: none;
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+}
+
+.url-bar__error {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-danger);
+}

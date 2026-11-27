@@ -1,0 +1,26 @@
+<h1 class="home__title"><d4m-logo variant="wordmark" /></h1>
+<p class="home__sub">Paste your links and download them all in one go.</p>
+
+<d4m-page-container size="md">
+  <d4m-url-bar
+    [(value)]="draft"
+    [error]="draftError()"
+    [loading]="fetching()"
+    [canFetch]="canFetch()"
+    (add)="addFromDraft()"
+    (fetch)="fetch()"
+  />
+  @if (fetchError()) {
+    <p class="home__error" role="alert">{{ fetchError() }}</p>
+  }
+  @if (links().length) {
+    <d4m-url-list
+      [entries]="links()"
+      [disabled]="fetching()"
+      (remove)="remove($event)"
+      (clear)="clear()"
+    />
+  }
+</d4m-page-container>
+
+<p class="visually-hidden" aria-live="polite">{{ notice() }}</p>
