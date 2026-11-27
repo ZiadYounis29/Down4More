@@ -1,0 +1,71 @@
+@if (loading()) {
+  <!-- Loading skeleton -->
+  <div class="mt-skeleton" aria-busy="true" aria-label="Loading media item">
+    <div class="mt-skeleton__thumb"></div>
+    <div class="mt-skeleton__lines">
+      <div class="mt-skeleton__line"></div>
+      <div class="mt-skeleton__line mt-skeleton__line--short"></div>
+    </div>
+  </div>
+} @else if (variant() === 'single') {
+  <!-- Single variant: thumb above, detail block below -->
+  <div class="mt-single">
+    <d4m-thumb-box
+      [src]="item().thumbnailUrl"
+      size="single"
+      [alt]="item().title"
+    />
+    <div class="mt-single__detail">
+      <p class="mt-single__title" [title]="item().title">{{ item().title }}</p>
+      @if (item().channelName) {
+        <p class="mt-single__meta">{{ item().channelName }}</p>
+      }
+      <p class="mt-single__meta">{{ displaySize() }} · {{ displayDuration() }}</p>
+    </div>
+  </div>
+} @else {
+  <!-- Row variants: pre-select and option-select -->
+  <button
+    type="button"
+    class="mt-row"
+    [attr.aria-pressed]="selected()"
+    [title]="item().title"
+    (click)="toggleSelected()"
+  >
+    @if (showCheckbox()) {
+      <d4m-checkbox [presentational]="true" [value]="selected()" />
+    }
+
+    <d4m-thumb-box
+      [src]="item().thumbnailUrl"
+      size="row"
+      [alt]="item().title"
+    />
+
+    <div class="mt-row__content">
+      <p class="mt-row__title" [title]="item().title">{{ item().title }}</p>
+
+      <!-- Compact meta line (shown only in compact layout via CSS) -->
+      <p class="mt-row__compact-meta">{{ compactMeta() }}</p>
+
+      @if (variant() === 'option-select') {
+        <d4m-tag [text]="tagText()" [variant]="tagVariant()" />
+      }
+    </div>
+
+    <!-- Full meta columns (hidden in compact layout via CSS) -->
+    <div class="mt-row__meta">
+      @if (variant() === 'option-select') {
+        <div class="mt-row__meta-col">
+          <span class="mt-row__meta-label">File size</span>
+          <span class="mt-row__meta-value">{{ displaySize() }}</span>
+        </div>
+        <div class="mt-row__divider"></div>
+      }
+      <div class="mt-row__meta-col">
+        <span class="mt-row__meta-label">Duration</span>
+        <span class="mt-row__meta-value">{{ displayDuration() }}</span>
+      </div>
+    </div>
+  </button>
+}
