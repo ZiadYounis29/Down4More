@@ -1,0 +1,19 @@
+<div class="sb" role="search">
+  <button type="button" class="sb__btn" (click)="focus()">
+    <d4m-icon name="search" [size]="18" />
+    <span>Search</span>
+  </button>
+  <input
+    #inputEl
+    type="text"
+    class="sb__input"
+    inputmode="search"
+    autocomplete="off"
+    spellcheck="false"
+    [value]="value()"
+    [placeholder]="placeholder()"
+    [attr.aria-label]="label()"
+    (input)="onInput($event)"
+    (keydown)="onKeyDown($event)"
+  />
+</div>

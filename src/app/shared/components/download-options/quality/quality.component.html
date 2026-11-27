@@ -1,0 +1,11 @@
+<select
+  class="native-sel"
+  [attr.aria-label]="label() || 'Quality'"
+  [disabled]="disabled() || null"
+  [value]="selectedIndex()"
+  (change)="onChange($event)"
+>
+  @for (opt of options(); track $index) {
+    <option [value]="$index" [selected]="$index === selectedIndex()">{{ opt }}</option>
+  }
+</select>

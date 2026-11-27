@@ -1,0 +1,62 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.tp--disabled {
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+.tp__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.tp__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.tp__content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+// Temporary native-button stand-in for d4m-toggle (to be replaced once T1 merges to main)
+.tp__switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  min-width: 46px;
+  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  border: var(--field-border);
+  background: var(--field-bg);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  cursor: pointer;
+
+  &[aria-checked='true'] {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-bg);
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}

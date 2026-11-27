@@ -1,0 +1,41 @@
+<h1 class="visually-hidden">History</h1>
+
+<d4m-page-container size="lg" padding="split">
+  <d4m-search-bar header [(value)]="query" />
+
+  <d4m-item-container [items]="shown()" [selectable]="false" [visibleRows]="5">
+    <ng-template d4mItem let-item>
+      <d4m-download-info variant="history" [item]="asDownloadItem(item)" (action)="onAction($event)" />
+    </ng-template>
+
+    <div empty class="hist__empty">
+      @switch (status()) {
+        @case ('loading') {
+          <p role="status">Loading history…</p>
+        }
+        @case ('error') {
+          <p>Couldn't load history.</p>
+          <button type="button" class="btn btn--sm btn--ghost" (click)="reload()">Try again</button>
+        }
+        @default {
+          <p>
+            {{
+              total() === 0
+                ? 'No history yet. Finished downloads show up here.'
+                : 'Nothing in history matches your search.'
+            }}
+          </p>
+        }
+      }
+    </div>
+  </d4m-item-container>
+
+  @if (error()) {
+    <p class="hist__error" role="alert">{{ error() }}</p>
+  }
+  @if (total() > 0) {
+    <p footer class="hist__count" aria-live="polite">{{ countText() }}</p>
+  }
+</d4m-page-container>
+
+<p class="visually-hidden" aria-live="polite">{{ notice() }}</p>

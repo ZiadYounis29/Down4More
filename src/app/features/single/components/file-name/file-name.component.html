@@ -1,0 +1,18 @@
+<d4m-panel>
+  <label class="fn__label" [for]="inputId">File name</label>
+  <div class="fn__field">
+    <input
+      class="fn__input"
+      type="text"
+      [id]="inputId"
+      [value]="value()"
+      [placeholder]="placeholder()"
+      (input)="onInput($event)"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    @if (extension()) {
+      <span class="fn__ext" aria-hidden="true">.{{ extension() }}</span>
+    }
+  </div>
+</d4m-panel>

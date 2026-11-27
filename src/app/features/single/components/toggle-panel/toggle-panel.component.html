@@ -1,0 +1,23 @@
+<!-- d4m-toggle will be added once @shared/ui/toggle (p2/t1-controls) is merged to main -->
+<d4m-panel [padding]="padding()" [class.tp--disabled]="disabled()">
+  <div class="tp__header">
+    <span class="tp__label">{{ label() }}</span>
+    <button
+      type="button"
+      role="switch"
+      class="tp__switch"
+      [attr.aria-checked]="open()"
+      [attr.aria-expanded]="open()"
+      [disabled]="disabled() || null"
+      (click)="toggle()"
+    >
+      {{ open() ? 'On' : 'Off' }}
+    </button>
+  </div>
+
+  @if (open()) {
+    <div class="tp__content">
+      <ng-content select="[expanded]" />
+    </div>
+  }
+</d4m-panel>

@@ -1,0 +1,18 @@
+<section class="demo-section">
+  <h2>Search Bar (History)</h2>
+
+  <h3>Empty state (value='')</h3>
+  <d4m-search-bar [(value)]="emptyValue" />
+  <p>Current value: "{{ emptyValue() }}"</p>
+
+  <h3>With text value</h3>
+  <d4m-search-bar [(value)]="withValue" />
+  <p>Current value: "{{ withValue() }}"</p>
+
+  <h3>Long text value</h3>
+  <d4m-search-bar [(value)]="longValue" />
+  <p>Current value: "{{ longValue() }}"</p>
+
+  <h3>Custom placeholder</h3>
+  <d4m-search-bar [(value)]="emptyValue" placeholder="filter by name…" />
+</section>

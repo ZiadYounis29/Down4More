@@ -1,0 +1,16 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+
+  &--disabled {
+    opacity: 0.38;
+    pointer-events: none;
+  }
+}

@@ -1,0 +1,14 @@
+<div
+  class="track"
+  role="progressbar"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  [attr.aria-valuenow]="clampedValue()"
+  [attr.aria-label]="label() || null"
+>
+  <div
+    class="fill"
+    [class.fill--processing]="variant() === 'processing'"
+    [style.width.%]="clampedValue()"
+  ></div>
+</div>

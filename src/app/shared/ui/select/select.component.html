@@ -1,0 +1,33 @@
+<div class="select-wrap" [class.select-wrap--disabled]="disabled()">
+  <select
+    #selectEl
+    class="select"
+    [attr.aria-label]="label() || null"
+    [disabled]="disabled()"
+    (change)="onSelectionChange($event)"
+  >
+    @for (option of options(); track $index) {
+      <option
+        [value]="$index"
+        [selected]="$index === selectedIndex()"
+        [disabled]="!!option.disabled"
+      >
+        {{ option.label }}
+      </option>
+    }
+  </select>
+  <svg
+    class="chevron"
+    viewBox="0 0 24 24"
+    width="16"
+    height="16"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M6 9l6 6 6-6" />
+  </svg>
+</div>

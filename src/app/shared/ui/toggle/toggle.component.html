@@ -1,0 +1,18 @@
+<button
+  type="button"
+  role="switch"
+  class="toggle"
+  [class.toggle--on]="value()"
+  [attr.aria-checked]="value()"
+  [attr.aria-label]="label() || null"
+  [attr.aria-expanded]="expanded()"
+  [disabled]="disabled()"
+  (click)="toggle()"
+>
+  <span class="track" aria-hidden="true">
+    <span class="knob"></span>
+  </span>
+  @if (showText()) {
+    <span class="text">{{ value() ? 'On' : 'Off' }}</span>
+  }
+</button>

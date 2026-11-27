@@ -1,0 +1,87 @@
+<section class="demo-section">
+  <h2>Media Thumbnail</h2>
+
+  <!-- ── single variant ───────────────────────────────────────────────── -->
+  <h3>single — normal item</h3>
+  <d4m-media-thumbnail [item]="itemNormal" variant="single" />
+
+  <h3>single — no size (sizeBytes null)</h3>
+  <d4m-media-thumbnail [item]="itemNoSize" variant="single" />
+
+  <h3>single — unknown duration &amp; size (both null)</h3>
+  <d4m-media-thumbnail [item]="itemUnknown" variant="single" />
+
+  <h3>single — very long title</h3>
+  <d4m-media-thumbnail [item]="itemLongTitle" variant="single" />
+
+  <h3>single — sizeOverride (shown as null → "—")</h3>
+  <d4m-media-thumbnail [item]="itemNormal" variant="single" [sizeOverride]="null" />
+
+  <h3>single — sizeOverride with custom bytes (20 971 520 = 20 MB)</h3>
+  <d4m-media-thumbnail [item]="itemNormal" variant="single" [sizeOverride]="20971520" />
+
+  <h3>single — loading skeleton</h3>
+  <d4m-media-thumbnail [item]="itemNormal" variant="single" [loading]="true" />
+
+  <!-- ── pre-select variant ────────────────────────────────────────────── -->
+  <h3>pre-select — unselected (showCheckbox=true)</h3>
+  <d4m-media-thumbnail
+    [item]="itemNormal"
+    variant="pre-select"
+    [(selected)]="preSelectSelected"
+  />
+
+  <h3>pre-select — selected</h3>
+  <d4m-media-thumbnail
+    [item]="itemNormal"
+    variant="pre-select"
+    [selected]="true"
+  />
+
+  <h3>pre-select — showCheckbox=false</h3>
+  <d4m-media-thumbnail
+    [item]="itemNormal"
+    variant="pre-select"
+    [showCheckbox]="false"
+  />
+
+  <!-- ── option-select variant ─────────────────────────────────────────── -->
+  <h3>option-select — appliedTag null → shows "Default" tag</h3>
+  <d4m-media-thumbnail
+    [item]="itemNormal"
+    variant="option-select"
+    [appliedTag]="null"
+    [(selected)]="optionSelectSelected"
+  />
+
+  <h3>option-select — appliedTag set → shows applied (red) tag</h3>
+  <d4m-media-thumbnail
+    [item]="itemNormal"
+    variant="option-select"
+    appliedTag="1080p · mp4"
+    [(selected)]="optionSelectAppliedSelected"
+  />
+
+  <h3>option-select — no size, with appliedTag</h3>
+  <d4m-media-thumbnail
+    [item]="itemNoSize"
+    variant="option-select"
+    appliedTag="720p · webm"
+  />
+
+  <!-- ── compact (narrow wrapper, 390 px) ──────────────────────────────── -->
+  <h3>Compact row — single (narrow wrapper 390px)</h3>
+  <div style="max-width:390px">
+    <d4m-media-thumbnail [item]="itemNormal" variant="single" />
+  </div>
+
+  <h3>Compact row — pre-select (narrow wrapper 390px)</h3>
+  <div style="max-width:390px">
+    <d4m-media-thumbnail [item]="itemNormal" variant="pre-select" />
+  </div>
+
+  <h3>Compact row — option-select, appliedTag (narrow wrapper 390px)</h3>
+  <div style="max-width:390px">
+    <d4m-media-thumbnail [item]="itemNormal" variant="option-select" appliedTag="1080p · mp4" />
+  </div>
+</section>

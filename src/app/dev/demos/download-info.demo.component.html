@@ -1,0 +1,67 @@
+<section class="demo-section">
+  <h2>Download Info</h2>
+
+  <p><strong>Last action:</strong> {{ lastAction() }}</p>
+
+  <!-- ── small variant — all statuses ─────────────────────────────────── -->
+  <h3>small — queued</h3>
+  <d4m-download-info [item]="queued" variant="small" (action)="onAction($event)" />
+
+  <h3>small — downloading (67%, 17.2 MB/s, 40 hrs)</h3>
+  <d4m-download-info [item]="downloading" variant="small" (action)="onAction($event)" />
+
+  <h3>small — paused</h3>
+  <d4m-download-info [item]="paused" variant="small" (action)="onAction($event)" />
+
+  <h3>small — processing</h3>
+  <d4m-download-info [item]="processing" variant="small" (action)="onAction($event)" />
+
+  <h3>small — done</h3>
+  <d4m-download-info [item]="done" variant="small" (action)="onAction($event)" />
+
+  <h3>small — failed</h3>
+  <d4m-download-info [item]="failed" variant="small" (action)="onAction($event)" />
+
+  <!-- ── small — selectable ─────────────────────────────────────────────── -->
+  <h3>small — selectable=true (downloading)</h3>
+  <d4m-download-info [item]="downloading" variant="small" [selectable]="true" (action)="onAction($event)" />
+
+  <!-- ── small — edge cases ─────────────────────────────────────────────── -->
+  <h3>small — very long title (downloading)</h3>
+  <d4m-download-info [item]="longTitle" variant="small" (action)="onAction($event)" />
+
+  <h3>small — unknown total size (no eta)</h3>
+  <d4m-download-info [item]="unknownSize" variant="small" (action)="onAction($event)" />
+
+  <!-- ── compact (narrow wrapper, 390 px) ──────────────────────────────── -->
+  <h3>Compact small — downloading (narrow wrapper 390px)</h3>
+  <div style="max-width:390px">
+    <d4m-download-info [item]="downloading" variant="small" (action)="onAction($event)" />
+  </div>
+
+  <!-- ── big variant — all statuses ────────────────────────────────────── -->
+  <h3>big — queued</h3>
+  <d4m-download-info [item]="queued" variant="big" (action)="onAction($event)" />
+
+  <h3>big — downloading</h3>
+  <d4m-download-info [item]="downloading" variant="big" (action)="onAction($event)" />
+
+  <h3>big — paused</h3>
+  <d4m-download-info [item]="paused" variant="big" (action)="onAction($event)" />
+
+  <h3>big — processing</h3>
+  <d4m-download-info [item]="processing" variant="big" (action)="onAction($event)" />
+
+  <h3>big — done</h3>
+  <d4m-download-info [item]="done" variant="big" (action)="onAction($event)" />
+
+  <h3>big — failed</h3>
+  <d4m-download-info [item]="failed" variant="big" (action)="onAction($event)" />
+
+  <!-- ── history variant ────────────────────────────────────────────────── -->
+  <h3>history — done (green row)</h3>
+  <d4m-download-info [item]="historyDone" variant="history" (action)="onAction($event)" />
+
+  <h3>history — failed (red row)</h3>
+  <d4m-download-info [item]="historyFailed" variant="history" (action)="onAction($event)" />
+</section>

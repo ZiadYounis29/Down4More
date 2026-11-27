@@ -1,0 +1,29 @@
+<span
+  class="logo"
+  [class.logo--wordmark]="variant() === 'wordmark'"
+  role="img"
+  [attr.aria-label]="label()"
+>
+  @if (variant() === 'wordmark') {
+    <span class="logo__down" aria-hidden="true">Down</span>
+  }
+  <svg
+    class="logo__mark"
+    viewBox="860 185 925 1070"
+    aria-hidden="true"
+    [style.height]="markHeight()"
+  >
+    <polygon class="lb" points="1316,193 1537,193 1350,411 1127,669 872,669" />
+    <polygon
+      class="lr"
+      points="1537,193 1537,1040 1647,1040 1445,1243 1242,1040 1351,1040 1351,411"
+    />
+    <polygon class="lr" points="872,669 1774,669 1667,855 962,855" />
+    <polygon class="lrs" points="1351,411 1537,193 1351,472" />
+    <polygon class="lbs" points="872,669 1167,620 1127,669" />
+    <polygon class="lrs" points="1351,855 1537,855 1537,886 1351,886" />
+  </svg>
+  @if (variant() === 'wordmark') {
+    <span class="logo__more" aria-hidden="true">More</span>
+  }
+</span>

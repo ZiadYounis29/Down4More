@@ -1,0 +1,12 @@
+:host {
+  display: grid;
+  gap: 12px;
+
+  &.layout-stacked {
+    grid-template-columns: repeat(var(--do-cols, 2), 1fr);
+  }
+
+  &.layout-contents {
+    display: contents;
+  }
+}
