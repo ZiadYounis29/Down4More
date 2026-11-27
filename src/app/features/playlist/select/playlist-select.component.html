@@ -1,0 +1,31 @@
+<h1 class="visually-hidden">Choose videos</h1>
+
+<d4m-page-container size="md">
+  @if (state.failedCount() > 0) {
+    <p header class="sel__notice" role="status">{{ failedText() }}</p>
+  }
+
+  <d4m-item-container
+    [items]="state.items()"
+    [selectable]="true"
+    [visibleRows]="5"
+    selectAllLabel="Select all"
+    [(selectedIds)]="state.chosenIds"
+  >
+    <ng-template d4mItem let-item let-sel="selected" let-toggle="toggle">
+      <d4m-media-thumbnail
+        variant="pre-select"
+        [item]="asMediaItem(item)"
+        [selected]="sel"
+        (selectedChange)="toggle()"
+      />
+    </ng-template>
+  </d4m-item-container>
+
+  <d4m-nav-buttons
+    footer
+    fullWidth="compact"
+    [buttons]="buttons()"
+    (pressed)="onPressed($event)"
+  />
+</d4m-page-container>

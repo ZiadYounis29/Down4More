@@ -41,14 +41,6 @@ export const APP_ROUTES: Routes = [
         (m) => m.SettingsComponent,
       ),
   },
-  ...(environment.production
-    ? []
-    : [
-        {
-          path: 'dev',
-          loadChildren: () =>
-            import('./dev/dev.routes').then((m) => m.DEV_ROUTES),
-        },
-      ]),
+  ...environment.devRoutes,
   { path: '**', redirectTo: '' },
 ];

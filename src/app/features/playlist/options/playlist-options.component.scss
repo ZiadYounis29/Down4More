@@ -1,0 +1,60 @@
+@use 'styles/breakpoints' as *;
+
+.opt {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  height: 100%;
+}
+
+.opt__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+  grid-template-areas:
+    'mode mode'
+    'quality format'
+    'captions captions'
+    'bitrate apply';
+}
+
+.opt__apply {
+  grid-area: apply;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.opt__status {
+  margin: 0;
+  height: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.opt__status--dirty {
+  color: var(--color-accent);
+}
+
+.opt__download {
+  margin-top: auto;
+}
+
+.opt__message {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-danger);
+}
+
+@include compact {
+  .opt {
+    height: auto;
+  }
+}

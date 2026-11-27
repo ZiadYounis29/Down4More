@@ -1,0 +1,31 @@
+<div class="group" role="group" aria-label="Filter by status">
+  <button
+    type="button"
+    class="pill"
+    [attr.aria-pressed]="value() === 'done'"
+    (click)="toggle('done')"
+  >
+    <span class="dot dot--done" aria-hidden="true"></span>
+    <span>{{ formatCount(counts().done) }} Done</span>
+  </button>
+
+  <button
+    type="button"
+    class="pill"
+    [attr.aria-pressed]="value() === 'downloading'"
+    (click)="toggle('downloading')"
+  >
+    <span class="dot dot--downloading" aria-hidden="true"></span>
+    <span>{{ formatCount(counts().downloading) }} Downloading</span>
+  </button>
+
+  <button
+    type="button"
+    class="pill"
+    [attr.aria-pressed]="value() === 'failed'"
+    (click)="toggle('failed')"
+  >
+    <span class="dot dot--failed" aria-hidden="true"></span>
+    <span>{{ formatCount(counts().failed) }} Failed</span>
+  </button>
+</div>

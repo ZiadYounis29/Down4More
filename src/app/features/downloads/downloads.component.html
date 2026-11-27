@@ -1,0 +1,57 @@
+<h1 class="visually-hidden">Downloads</h1>
+
+<d4m-page-container size="lg" padding="split" layout="split">
+  <section main aria-label="Download queue">
+    <d4m-item-container
+      [items]="visible()"
+      [selectable]="true"
+      [visibleRows]="5"
+      [(selectedIds)]="selectedIds"
+    >
+      <d4m-nav-buttons
+        toolbar
+        size="sm"
+        [buttons]="toolbar()"
+        (pressed)="onToolbar($event)"
+      />
+
+      <ng-template d4mItem let-item let-sel="selected" let-toggle="toggle">
+        <d4m-download-info
+          variant="small"
+          [item]="asDownloadItem(item)"
+          [selectable]="true"
+          [selected]="sel"
+          (selectedChange)="toggle()"
+          (action)="onAction($event)"
+        />
+      </ng-template>
+
+      <div empty class="dl__empty">
+        @if (filter() === null || filter() === 'downloading') {
+          <p>No downloads yet.</p>
+          <a class="btn btn--primary" routerLink="/">Paste a link</a>
+        } @else {
+          <p>No {{ filter() === 'done' ? 'finished' : 'failed' }} downloads.</p>
+        }
+      </div>
+    </d4m-item-container>
+
+    @if (error()) {
+      <p class="dl__error" role="alert">{{ error() }}</p>
+    }
+  </section>
+
+  <section side class="dl__side" aria-label="Download details">
+    <d4m-panel class="dl__status">
+      <d4m-status-count [counts]="counts()" [(value)]="filter" />
+    </d4m-panel>
+
+    <d4m-panel class="dl__details">
+      @if (details(); as item) {
+        <d4m-download-info variant="big" [item]="item" (action)="onAction($event)" />
+      } @else {
+        <p class="dl__none">Nothing to show yet.</p>
+      }
+    </d4m-panel>
+  </section>
+</d4m-page-container>

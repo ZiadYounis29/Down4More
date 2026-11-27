@@ -1,11 +1,6 @@
-<select
-  class="native-sel"
-  [attr.aria-label]="label() || 'Bit-rate'"
-  [disabled]="disabled() || null"
-  [value]="selectedIndex()"
-  (change)="onChange($event)"
->
-  @for (opt of options(); track $index) {
-    <option [value]="$index" [selected]="$index === selectedIndex()">{{ opt }} kbps</option>
-  }
-</select>
+<d4m-select
+  [(value)]="value"
+  [options]="selectOptions()"
+  [disabled]="disabled()"
+  [label]="label() || 'Bit-rate'"
+/>

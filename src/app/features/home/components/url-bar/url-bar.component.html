@@ -1,0 +1,32 @@
+<div class="bar">
+  <button
+    type="button"
+    class="btn btn--circle"
+    aria-label="Add link"
+    [disabled]="plusDisabled()"
+    (click)="onAdd()"
+  >
+    <d4m-icon name="plus" [size]="20" />
+  </button>
+
+  <input
+    #linkInput
+    type="text"
+    class="bar__input"
+    aria-label="Link"
+    inputmode="url"
+    autocomplete="off"
+    spellcheck="false"
+    placeholder="Paste a link to fetch"
+    [disabled]="loading()"
+    [value]="value()"
+    (input)="onInput($event)"
+    (keydown.enter)="onEnter($event)"
+  />
+
+  <d4m-nav-buttons size="md" [buttons]="fetchButtons()" (pressed)="onFetch()" />
+</div>
+
+@if (error()) {
+  <p class="bar__error" role="alert">{{ error() }}</p>
+}

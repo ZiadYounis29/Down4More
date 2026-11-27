@@ -1,0 +1,59 @@
+<h1 class="visually-hidden">Download options</h1>
+
+<d4m-page-container size="lg" padding="split" layout="split">
+  <section main aria-label="Chosen videos">
+    <d4m-item-container
+      [items]="state.chosenItems()"
+      [selectable]="true"
+      [visibleRows]="5"
+      selectAllLabel="Global"
+      [noSelectionMeansAll]="true"
+      [summary]="state.summary()"
+      [(selectedIds)]="state.selectedIds"
+    >
+      <ng-template d4mItem let-item let-sel="selected" let-toggle="toggle">
+        <d4m-media-thumbnail
+          variant="option-select"
+          [item]="asMediaItem(item)"
+          [selected]="sel"
+          (selectedChange)="toggle()"
+          [showCheckbox]="!state.isGlobal()"
+          [appliedTag]="state.tagFor(asMediaItem(item).id)"
+          [sizeOverride]="state.sizeFor(asMediaItem(item).id)"
+        />
+      </ng-template>
+    </d4m-item-container>
+  </section>
+
+  <section side class="opt" aria-label="Download settings">
+    <div class="opt__grid">
+      <d4m-download-options
+        layout="contents"
+        [(settings)]="state.draft"
+        [catalog]="state.effectiveCatalog()"
+      />
+      <div class="opt__apply">
+        <d4m-nav-buttons
+          size="lg"
+          [fullWidth]="true"
+          [buttons]="applyButtons"
+          (pressed)="onPressed($event)"
+        />
+        <p class="opt__status" [class.opt__status--dirty]="state.dirty()" aria-live="polite">
+          {{ state.dirty() ? 'Unsaved changes' : 'Settings applied' }}
+        </p>
+      </div>
+    </div>
+
+    <d4m-nav-buttons
+      class="opt__download"
+      size="lg"
+      [fullWidth]="true"
+      [buttons]="downloadButtons()"
+      (pressed)="onPressed($event)"
+    />
+    @if (message()) {
+      <p class="opt__message" role="alert">{{ message() }}</p>
+    }
+  </section>
+</d4m-page-container>

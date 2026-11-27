@@ -1,9 +1,17 @@
 import { ChangeDetectionStrategy, Component, computed, input, model } from '@angular/core';
 import type { CaptionSettings } from '@core/models';
+import { Option, SelectComponent } from '@shared/ui/select';
+
+type BoolChoice = 'off' | 'on';
+
+const BOOL_OPTIONS: Option<BoolChoice>[] = [
+  { value: 'off', label: 'off' },
+  { value: 'on', label: 'on' },
+];
 
 @Component({
   selector: 'd4m-captions',
-  imports: [],
+  imports: [SelectComponent],
   templateUrl: './captions.component.html',
   styleUrl: './captions.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -13,19 +21,25 @@ export class CaptionsComponent {
   readonly disabled = input(false);
   readonly lockSeparate = input(false);
 
+  protected readonly boolOptions = BOOL_OPTIONS;
   protected readonly captionEnabled = computed(() => this.value().enabled);
-  protected readonly separateFile = computed(() => this.value().separateFile);
+  protected readonly captionChoice = computed<BoolChoice>(() =>
+    this.value().enabled ? 'on' : 'off',
+  );
+  protected readonly separateChoice = computed<BoolChoice>(() =>
+    (this.value().enabled && this.value().separateFile) || this.lockSeparate() ? 'on' : 'off',
+  );
 
-  protected onCaptionChange(event: Event): void {
-    const sel = event.target as HTMLSelectElement;
-    const enabled = sel.value === '1';
-    // turning captions off resets separateFile
-    this.value.set({ enabled, separateFile: enabled ? this.separateFile() : false });
+  protected onCaptionChange(choice: BoolChoice): void {
+    const enabled = choice === 'on';
+    this.value.set({
+      enabled,
+      separateFile: enabled ? this.value().separateFile : false,
+    });
   }
 
-  protected onSeparateChange(event: Event): void {
+  protected onSeparateChange(choice: BoolChoice): void {
     if (!this.captionEnabled() || this.lockSeparate()) return;
-    const sel = event.target as HTMLSelectElement;
-    this.value.set({ ...this.value(), separateFile: sel.value === '1' });
+    this.value.set({ ...this.value(), separateFile: choice === 'on' });
   }
 }

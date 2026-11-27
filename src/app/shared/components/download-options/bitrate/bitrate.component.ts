@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, input, model } from '@angular/core';
+import { Option, SelectComponent } from '@shared/ui/select';
 
 @Component({
   selector: 'd4m-bitrate',
-  imports: [],
+  imports: [SelectComponent],
   templateUrl: './bitrate.component.html',
   styleUrl: './bitrate.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -13,16 +14,7 @@ export class BitrateComponent {
   readonly disabled = input(false);
   readonly label = input('');
 
-  protected readonly selectedIndex = computed(() => {
-    const v = this.value();
-    const idx = this.options().indexOf(v ?? -1);
-    return idx >= 0 ? idx : -1;
-  });
-
-  protected onChange(event: Event): void {
-    const sel = event.target as HTMLSelectElement;
-    const idx = Number(sel.value);
-    const opts = this.options();
-    this.value.set(idx >= 0 && idx < opts.length ? opts[idx] : null);
-  }
+  protected readonly selectOptions = computed<Option<number | null>[]>(() =>
+    this.options().map((b) => ({ value: b, label: `${b} kbps` })),
+  );
 }

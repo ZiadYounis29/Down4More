@@ -1,0 +1,40 @@
+<ul
+  class="list"
+  [class.two-col]="twoCol()"
+  [style.--rows-per-col]="twoCol() ? rowsPerCol() : null"
+>
+  @for (entry of entries(); track entry.id; let i = $index) {
+    <li class="row">
+      <span class="row__num">{{ i + 1 }}</span>
+      @if (entry.failed) {
+        <d4m-tag class="row__tag" text="Couldn't load" variant="applied" />
+      } @else {
+        <span class="row__chip">{{ kindLabel(entry.kind) }}</span>
+      }
+      <span class="row__url" [title]="entry.url">{{ entry.url }}</span>
+      <button
+        type="button"
+        class="btn btn--danger row__remove"
+        [attr.aria-label]="'Remove link ' + (i + 1)"
+        [disabled]="disabled()"
+        (click)="remove.emit(entry.id)"
+      >
+        <d4m-icon name="x" [size]="18" />
+      </button>
+    </li>
+  }
+</ul>
+
+@if (entries().length) {
+  <div class="list__footer">
+    <span class="list__count">{{ countLabel() }}</span>
+    <button
+      type="button"
+      class="btn btn--sm btn--ghost"
+      [disabled]="disabled()"
+      (click)="clear.emit()"
+    >
+      Clear all
+    </button>
+  </div>
+}

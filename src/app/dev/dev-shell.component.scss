@@ -40,4 +40,38 @@
 .dev__content {
   padding: 24px 32px;
   overflow-y: auto;
+  min-width: 0;
+}
+
+.dev__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+::ng-deep .demo__case,
+::ng-deep .demo-grid > figure {
+  margin: 0 0 16px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+::ng-deep .demo__caption,
+::ng-deep .demo-grid > figure > figcaption {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+::ng-deep .demo__compact-wrap {
+  width: 390px;
+  max-width: 100%;
+  border: 1px dashed var(--color-border);
+  padding: 12px;
 }
