@@ -1,53 +1,41 @@
-<!-- Fallback markup for unmerged components (P1/P2-T3/P2-T4/P3) -->
-<div class="single-page-container">
+<h1 class="visually-hidden">Download options</h1>
+
+<d4m-page-container size="lg" padding="split">
   <div class="single" [class.fs-on]="frameSizeOn()" [class.trim-on]="trimOn()">
-    <div class="a-info">
-      <span>{{ item().title }}</span>
-      @if (estimatedSize() !== null) {
-        <span> ({{ estimatedSize() }} B)</span>
-      }
-    </div>
+    <d4m-media-thumbnail
+      class="a-info"
+      variant="single"
+      [item]="item()"
+      [sizeOverride]="estimatedSize()"
+    />
 
-    <div class="a-name">
-      <input
-        type="text"
-        aria-label="File name"
-        [value]="fileName()"
-        (input)="fileName.set($any($event.target).value)"
-      />
-      <span>.{{ settings().format }}</span>
-    </div>
+    <d4m-file-name
+      class="a-name"
+      [(value)]="fileName"
+      [extension]="settings().format"
+      [fallback]="item().title"
+    />
 
-    <!-- Fallback panels for d4m-download-options layout="contents" -->
-    <div class="area-captions" style="grid-area: captions">Captions</div>
-    <div class="area-mode" style="grid-area: mode">{{ settings().mode }}</div>
-    <div class="area-quality" style="grid-area: quality">{{ settings().quality }}</div>
-    <div class="area-format" style="grid-area: format">{{ settings().format }}</div>
-    <div class="area-bitrate" style="grid-area: bitrate">{{ settings().bitrate }}</div>
+    <d4m-download-options layout="contents" [(settings)]="settings" [catalog]="catalog()" />
 
-    <div class="a-framesize">
-      <button type="button" (click)="frameSizeOn.set(!frameSizeOn())">
-        Frame Size: {{ frameSizeOn() ? 'On' : 'Off' }}
-      </button>
-    </div>
+    <d4m-frame-size class="a-framesize" [(open)]="frameSizeOn" />
 
-    <div class="a-trim">
-      <button type="button" (click)="trimOn.set(!trimOn())">
-        Trim Video: {{ trimOn() ? 'On' : 'Off' }}
-      </button>
-    </div>
+    <d4m-trim-video
+      class="a-trim"
+      [(open)]="trimOn"
+      [durationSec]="item().durationSec"
+      [(segments)]="segments"
+    />
 
-    <button
-      type="button"
+    <d4m-nav-buttons
       class="a-download"
-      [disabled]="buttons()[0].disabled || buttons()[0].loading"
-      (click)="onPressed('download')"
-    >
-      {{ buttons()[0].label }}
-    </button>
+      size="lg"
+      [buttons]="buttons()"
+      (pressed)="onPressed($event)"
+    />
   </div>
 
   @if (error()) {
     <p class="single__error" role="alert">{{ error() }}</p>
   }
-</div>
+</d4m-page-container>

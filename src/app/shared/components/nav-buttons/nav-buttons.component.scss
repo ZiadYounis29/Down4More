@@ -1,0 +1,50 @@
+@use 'styles/breakpoints' as *;
+
+:host {
+  display: block;
+}
+
+.nb {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.nb__group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nb__group--end {
+  margin-left: auto;
+}
+
+.nb--full {
+  flex-wrap: wrap;
+
+  .nb__group {
+    flex: 1 1 100%;
+  }
+
+  .btn {
+    width: 100%;
+    flex: 1;
+  }
+}
+
+@include compact {
+  .nb--full-compact {
+    flex-wrap: wrap;
+
+    .nb__group {
+      flex: 1 1 100%;
+    }
+
+    .btn {
+      width: 100%;
+      flex: 1;
+    }
+  }
+}

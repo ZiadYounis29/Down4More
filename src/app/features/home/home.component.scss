@@ -1,21 +1,31 @@
 @use 'styles/breakpoints' as *;
 
 .home__title {
+  margin: 48px 0 8px;
   font-size: 60px;
   font-weight: 800;
   letter-spacing: -0.02em;
   text-align: center;
-  margin: 48px 0 8px;
-
-  @include compact {
-    font-size: clamp(36px, 9vw, 60px);
-  }
+  line-height: 1.1;
 }
 
 .home__sub {
+  margin: 0 0 32px;
   font-size: 17px;
   font-weight: 500;
   color: var(--color-text-muted);
   text-align: center;
-  margin: 0 0 32px;
+}
+
+.home__error {
+  margin: 14px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-danger);
+}
+
+@include compact {
+  .home__title {
+    font-size: clamp(36px, 9vw, 60px);
+  }
 }

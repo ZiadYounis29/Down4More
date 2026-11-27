@@ -1,0 +1,20 @@
+@use 'styles/breakpoints' as *;
+
+.shell {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 20px 32px 48px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+.shell__main {
+  margin-top: 28px;
+}
+
+@include compact {
+  .shell {
+    padding: 16px 16px 32px;
+  }
+}

@@ -1,315 +1,383 @@
-// STUB owned by P4: overwritten with the real implementation (P4 T3).
-// Unresolved imports (not on main yet): @core/utils/parse-url, @core/utils/fallback-quality,
-// @core/utils/nearest-bitrate — owned by P3 T1/T2. Imports left in place per the missing-dependency rule.
 import { Injectable, signal } from '@angular/core';
-import { delay, interval, map, of, share, startWith, Observable } from 'rxjs';
-import { ApiService } from './api.service';
+import {
+  interval,
+  map,
+  merge,
+  Observable,
+  of,
+  shareReplay,
+  Subject,
+  tap,
+  timer,
+} from 'rxjs';
+import {
+  generatePlaylistItems,
+  MOCK_CATALOG,
+  MOCK_MEDIA_ITEMS,
+  MOCK_PLAYLIST_ITEMS,
+  seedStore,
+} from '@core/mocks/mock-data';
 import {
   DownloadAction,
   DownloadItem,
   DownloadOptionsCatalog,
   DownloadRequest,
-  FetchResult,
+  DownloadSettings,
   FetchFailure,
+  FetchResult,
   MediaItem,
 } from '@core/models';
-import {
-  MOCK_CATALOG,
-  MOCK_MEDIA_ITEMS,
-  MOCK_PLAYLIST_ITEMS,
-  generatePlaylistItems,
-  seedStore,
-} from '@core/mocks/mock-data';
-import { parseUrl } from '@core/utils/parse-url';
-import { fallbackQuality } from '@core/utils/fallback-quality';
-import { nearestBitrate } from '@core/utils/nearest-bitrate';
+import { fallbackQuality, nearestBitrate, parseUrl } from '@core/utils';
+import { ApiService } from './api.service';
 
-const SPEEDS_MBPS = [4.1, 6.3, 9.8, 17.2, 21.5];
+const MB = 1024 * 1024;
+const MOCK_SPEEDS_BPS = [4.1 * MB, 6.3 * MB, 9.8 * MB, 17.2 * MB, 21.5 * MB].map(Math.round);
+const MAX_CONCURRENT_DOWNLOADS = 3;
+const PROCESSING_TICKS = 3;
 
 @Injectable({ providedIn: 'root' })
 export class MockApiService extends ApiService {
-  private store = signal<DownloadItem[]>(seedStore().items);
-  private dismissed = signal<Set<string>>(new Set(seedStore().dismissedIds));
+  private readonly initialSeed = seedStore();
+  private readonly store = signal<DownloadItem[]>(this.initialSeed.items);
+  private readonly dismissed = signal<Set<string>>(new Set(this.initialSeed.dismissedIds));
+
   private nextPriority = 1000;
-  private speedCounter = 0;
-  private processingTicks = new Map<string, number>();
+  private nextDownloadId = 1;
+  private mediaCursor = 0;
+  private speedCursor = 0;
+  private readonly processingTicks = new Map<string, number>();
+  private readonly refresh$ = new Subject<void>();
+
+  private readonly sharedDownloads$ = merge(
+    of(-1),
+    interval(1000).pipe(tap(() => this.advanceOneTick())),
+    this.refresh$,
+  ).pipe(
+    map(() => this.visibleDownloads()),
+    shareReplay({ bufferSize: 1, refCount: true }),
+  );
 
   fetchInfo(urls: string[]): Observable<FetchResult> {
-    return of(this.buildFetchResult(urls)).pipe(delay(600));
-  }
-
-  private buildFetchResult(urls: string[]): FetchResult {
-    const failed: FetchFailure[] = [];
-    const items: MediaItem[] = [];
-    const seenIds = new Map<string, number>();
-    let mediaItemIndex = 0;
-
-    for (const rawUrl of urls) {
-      const containsFail = rawUrl.toLowerCase().includes('fail');
-      const parsed = parseUrl(rawUrl);
-
-      if (!parsed.valid || containsFail) {
-        failed.push({
-          url: rawUrl,
-          reason: containsFail
-            ? 'Link contains "fail"'
-            : parsed.reason ?? 'not-a-link',
-        });
-        continue;
-      }
-
-      let sourceItems: MediaItem[];
-      if (parsed.kind === 'playlist' && rawUrl.toLowerCase().includes('big')) {
-        sourceItems = generatePlaylistItems(300);
-      } else if (parsed.kind === 'video' || parsed.kind === 'unknown') {
-        sourceItems = [MOCK_MEDIA_ITEMS[mediaItemIndex % MOCK_MEDIA_ITEMS.length]];
-        mediaItemIndex++;
-      } else {
-        sourceItems = [...MOCK_PLAYLIST_ITEMS];
-      }
-
-      for (const item of sourceItems) {
-        const baseId = item.id;
-        let finalId = baseId;
-        const count = seenIds.get(baseId) ?? 0;
-        if (count > 0) {
-          finalId = `${baseId}-${count + 1}`;
-        }
-        seenIds.set(baseId, count + 1);
-
-        items.push({ ...item, id: finalId });
-      }
-    }
-
-    const kind = urls.length === 1 && items.length === 1 ? 'single' : 'playlist';
-    const title = kind === 'playlist' && urls.length === 1 ? urls[0] : undefined;
-
-    return {
-      kind,
-      items,
-      catalog: MOCK_CATALOG,
-      failed,
-      ...(title ? { title } : {}),
-    };
+    return timer(600).pipe(map(() => this.buildFetchResult(urls)));
   }
 
   startDownloads(requests: DownloadRequest[]): Observable<void> {
-    for (const request of requests) {
-      const catalog = request.item.catalog ?? MOCK_CATALOG;
-      const resolved = this.resolveSettings(request.settings, catalog);
+    if (requests.length === 0) {
+      return of(undefined);
+    }
 
-      const speedBps = SPEEDS_MBPS[this.speedCounter % SPEEDS_MBPS.length] * 1024 * 1024;
-      this.speedCounter++;
+    const added: DownloadItem[] = requests.map((req) => {
+      const catalog = req.item.catalog ?? MOCK_CATALOG;
+      const resolved = this.resolveSettings(req.settings, catalog);
+      const speedBps = MOCK_SPEEDS_BPS[this.speedCursor % MOCK_SPEEDS_BPS.length];
+      this.speedCursor++;
 
-      const item: DownloadItem = {
-        ...request.item,
+      return {
+        ...req.item,
+        id: `dl-req-${this.nextDownloadId++}`,
         status: 'queued',
         progress: 0,
         downloadedBytes: 0,
-        totalBytes: request.item.sizeBytes ?? null,
+        totalBytes: req.item.sizeBytes ?? null,
         speedBps,
         etaSec: null,
         settings: resolved,
         priority: this.nextPriority++,
+        startedAt: new Date().toISOString(),
       };
+    });
 
-      this.store.update(current => [...current, item]);
-    }
-
+    this.store.update((items) => [...items, ...added]);
+    this.refresh$.next();
     return of(undefined);
   }
 
-  private resolveSettings(
-    settings: DownloadItem['settings'],
-    catalog: DownloadOptionsCatalog
-  ): DownloadItem['settings'] {
-    const isAudio = settings.mode === 'audio-only';
-    const validFormats = isAudio ? catalog.audioFormats : catalog.videoFormats;
-
-    return {
-      mode: settings.mode,
-      quality: settings.quality == null ? null : fallbackQuality(settings.quality, catalog.qualities),
-      bitrate: settings.bitrate == null ? null : nearestBitrate(settings.bitrate, catalog.bitrates),
-      format: validFormats.includes(settings.format) ? settings.format : validFormats[0],
-      captions: settings.captions,
-    };
-  }
-
   downloads$(): Observable<DownloadItem[]> {
-    return interval(1000).pipe(
-      startWith(0),
-      map(() => {
-        this.advanceOneTick();
-        return this.store().filter(d => !this.dismissed().has(d.id));
-      }),
-      share({ refCount: true })
-    );
-  }
-
-  private advanceOneTick(): void {
-    this.store.update(items => {
-      const result = [...items];
-
-      // 1. Concurrency: at most 3 downloading. Cap only controls STARTING items.
-      const downloadingCount = result.filter(i => i.status === 'downloading').length;
-      const slots = Math.max(0, 3 - downloadingCount);
-      if (slots > 0) {
-        const queued = result
-          .filter(i => i.status === 'queued')
-          .sort((a, b) => a.priority - b.priority)
-          .slice(0, slots);
-        for (const item of queued) {
-          const idx = result.findIndex(i => i.id === item.id);
-          if (idx !== -1) {
-            result[idx] = { ...result[idx], status: 'downloading' };
-          }
-        }
-      }
-
-      // 2. Advance downloading items
-      for (let idx = 0; idx < result.length; idx++) {
-        const item = result[idx];
-        if (item.status !== 'downloading') continue;
-
-        const speedBps = item.speedBps ?? 0;
-        const newDownloaded = item.downloadedBytes + speedBps;
-
-        let newProgress: number;
-        let newEta: number | null;
-
-        if (item.totalBytes != null) {
-          newProgress = Math.min(100, Math.round((newDownloaded / item.totalBytes) * 100));
-          const remaining = item.totalBytes - newDownloaded;
-          newEta = speedBps > 0 ? remaining / speedBps : null;
-        } else {
-          newProgress = Math.min(100, item.progress + 2);
-          newEta = null;
-        }
-
-        // Fail at 50% when title contains "fail"
-        if (item.title.toLowerCase().includes('fail') && newProgress >= 50) {
-          result[idx] = {
-            ...item,
-            status: 'failed',
-            error: 'Network error',
-            speedBps: null,
-            etaSec: null,
-          };
-          continue;
-        }
-
-        const updated: DownloadItem = {
-          ...item,
-          downloadedBytes: newDownloaded,
-          progress: newProgress,
-          etaSec: newEta,
-        };
-
-        // Progress 100 -> processing for 3 ticks, then done
-        if (newProgress === 100) {
-          updated.status = 'processing';
-          updated.speedBps = null;
-          updated.etaSec = null;
-          this.processingTicks.set(updated.id, 3);
-        }
-
-        result[idx] = updated;
-      }
-
-      // 3. Decrement processing ticks -> done
-      for (const [id, ticksLeft] of this.processingTicks) {
-        const idx = result.findIndex(i => i.id === id);
-        if (idx === -1) continue;
-        const newTicks = ticksLeft - 1;
-        if (newTicks <= 0) {
-          result[idx] = {
-            ...result[idx],
-            status: 'done',
-            finishedAt: new Date().toISOString(),
-          };
-          this.processingTicks.delete(id);
-        } else {
-          this.processingTicks.set(id, newTicks);
-        }
-      }
-
-      return result;
-    });
+    return this.sharedDownloads$;
   }
 
   control(action: DownloadAction, ids: string[]): Observable<void> {
+    if (ids.length === 0) {
+      return of(undefined);
+    }
     const idSet = new Set(ids);
 
     switch (action) {
       case 'pause':
-        this.store.update(items =>
-          items.map(i =>
-            idSet.has(i.id) && i.status === 'downloading'
-              ? { ...i, status: 'paused', speedBps: null, etaSec: null }
-              : i
-          )
+        this.store.update((items) =>
+          items.map((item) =>
+            idSet.has(item.id) &&
+            (item.status === 'downloading' || item.status === 'queued')
+              ? { ...item, status: 'paused', speedBps: null, etaSec: null }
+              : item,
+          ),
         );
         break;
+
       case 'resume':
-        this.store.update(items =>
-          items.map(i =>
-            idSet.has(i.id) && i.status === 'paused'
-              ? { ...i, status: 'queued' }
-              : i
-          )
-        );
-        break;
-      case 'cancel':
-        this.store.update(items => items.filter(i => !idSet.has(i.id)));
-        break;
-      case 'retry':
-        this.store.update(items =>
-          items.map(i =>
-            idSet.has(i.id) && i.status === 'failed'
+        this.store.update((items) =>
+          items.map((item) =>
+            idSet.has(item.id) && item.status === 'paused'
               ? {
-                  ...i,
+                  ...item,
                   status: 'queued',
-                  error: undefined,
-                  finishedAt: undefined,
-                  progress: 0,
-                  downloadedBytes: 0,
+                  speedBps:
+                    item.speedBps ??
+                    MOCK_SPEEDS_BPS[this.speedCursor++ % MOCK_SPEEDS_BPS.length],
                 }
-              : i
-          )
+              : item,
+          ),
         );
         break;
+
+      case 'cancel':
       case 'remove':
-        this.store.update(items => items.filter(i => !idSet.has(i.id)));
+        for (const id of ids) {
+          this.processingTicks.delete(id);
+        }
+        this.store.update((items) => items.filter((item) => !idSet.has(item.id)));
         break;
+
+      case 'retry':
+        this.store.update((items) =>
+          items.map((item) => {
+            if (!idSet.has(item.id) || item.status !== 'failed') return item;
+            const { error: _err, finishedAt: _fin, ...rest } = item;
+            return {
+              ...rest,
+              status: 'queued',
+              progress: 0,
+              downloadedBytes: 0,
+              speedBps:
+                item.speedBps ??
+                MOCK_SPEEDS_BPS[this.speedCursor++ % MOCK_SPEEDS_BPS.length],
+              etaSec: null,
+            };
+          }),
+        );
+        break;
+
       case 'prioritize':
-        this.store.update(items => {
-          const targets = items.filter(i => idSet.has(i.id));
-          const others = items.filter(i => !idSet.has(i.id));
-          const minPriority = Math.min(0, ...others.map(i => i.priority)) - 1;
-          const prioritized = targets.map((i, index) => ({
-            ...i,
-            priority: minPriority + index,
-          }));
-          return [...others, ...prioritized].sort((a, b) => a.priority - b.priority);
+        this.store.update((items) => {
+          const minPriority = items.reduce((min, it) => Math.min(min, it.priority), 1);
+          const priorityMap = new Map<string, number>();
+          let next = minPriority - ids.length;
+          for (const id of ids) {
+            if (!priorityMap.has(id)) {
+              priorityMap.set(id, next++);
+            }
+          }
+          return items.map((item) =>
+            priorityMap.has(item.id)
+              ? { ...item, priority: priorityMap.get(item.id)! }
+              : item,
+          );
         });
         break;
+
       case 'dismiss':
-        this.dismissed.update(d => {
-          const next = new Set(d);
+        this.dismissed.update((set) => {
+          const next = new Set(set);
           for (const id of ids) next.add(id);
           return next;
         });
         break;
     }
 
+    this.refresh$.next();
     return of(undefined);
   }
 
   history(query?: string): Observable<DownloadItem[]> {
+    const q = query?.trim().toLowerCase() ?? '';
     const rows = this.store()
-      .filter(d => d.status === 'done' || d.status === 'failed')
-      .filter(d => !query || d.title.toLowerCase().includes(query.toLowerCase()))
+      .filter((d) => d.status === 'done' || d.status === 'failed')
+      .filter((d) => !q || d.title.toLowerCase().includes(q))
       .sort((a, b) => (b.finishedAt ?? '').localeCompare(a.finishedAt ?? ''));
     return of(rows);
+  }
+
+  private visibleDownloads(): DownloadItem[] {
+    const hidden = this.dismissed();
+    return this.store().filter((d) => !hidden.has(d.id));
+  }
+
+  private buildFetchResult(urls: string[]): FetchResult {
+    const items: MediaItem[] = [];
+    const failed: FetchFailure[] = [];
+    const usedIds = new Set<string>();
+    let playlistTitle: string | undefined;
+
+    for (const raw of urls) {
+      const parsed = parseUrl(raw);
+      if (raw.toLowerCase().includes('fail') || !parsed.valid) {
+        failed.push({
+          url: raw,
+          reason: parsed.valid ? "Couldn't load this link." : 'Not a valid link.',
+        });
+        continue;
+      }
+
+      if (parsed.kind === 'playlist') {
+        const batch = raw.toLowerCase().includes('big')
+          ? generatePlaylistItems(300)
+          : MOCK_PLAYLIST_ITEMS;
+        for (const item of batch) {
+          items.push(this.withUniqueId(item, usedIds));
+        }
+        if (urls.length === 1) {
+          playlistTitle = 'Down4More Playlist';
+        }
+      } else {
+        const picked = MOCK_MEDIA_ITEMS[this.mediaCursor % MOCK_MEDIA_ITEMS.length];
+        this.mediaCursor++;
+        items.push(this.withUniqueId(picked, usedIds));
+      }
+    }
+
+    const kind = urls.length === 1 && items.length === 1 ? 'single' : 'playlist';
+    return {
+      kind,
+      items,
+      catalog: MOCK_CATALOG,
+      failed,
+      ...(playlistTitle ? { title: playlistTitle } : {}),
+    };
+  }
+
+  private withUniqueId(item: MediaItem, usedIds: Set<string>): MediaItem {
+    let id = item.id;
+    let suffix = 2;
+    while (usedIds.has(id)) {
+      id = `${item.id}-${suffix++}`;
+    }
+    usedIds.add(id);
+    return { ...item, id };
+  }
+
+  private resolveSettings(
+    settings: DownloadSettings,
+    catalog: typeof MOCK_CATALOG,
+  ): DownloadSettings {
+    const validFormats =
+      settings.mode === 'audio-only' ? catalog.audioFormats : catalog.videoFormats;
+    const format = validFormats.includes(settings.format)
+      ? settings.format
+      : (validFormats[0] ?? settings.format);
+
+    const quality =
+      settings.quality == null ? null : fallbackQuality(settings.quality, catalog.qualities);
+    const bitrate =
+      settings.bitrate == null ? null : nearestBitrate(settings.bitrate, catalog.bitrates);
+
+    return {
+      ...settings,
+      quality,
+      bitrate,
+      format,
+    };
+  }
+
+  private advanceOneTick(): void {
+    const current = this.store();
+    const activeCount = current.filter((d) => d.status === 'downloading').length;
+    const slotsAvailable = Math.max(0, MAX_CONCURRENT_DOWNLOADS - activeCount);
+
+    const toStart = new Set<string>();
+    if (slotsAvailable > 0) {
+      const queued = current
+        .filter((d) => d.status === 'queued')
+        .sort((a, b) => a.priority - b.priority)
+        .slice(0, slotsAvailable);
+      for (const q of queued) toStart.add(q.id);
+    }
+
+    const nowIso = new Date().toISOString();
+
+    const updated = current.map((item): DownloadItem => {
+      if (toStart.has(item.id)) {
+        const speedBps =
+          item.speedBps ?? MOCK_SPEEDS_BPS[this.speedCursor++ % MOCK_SPEEDS_BPS.length];
+        return {
+          ...item,
+          status: 'downloading',
+          speedBps,
+        };
+      }
+
+      if (item.status === 'downloading') {
+        const speedBps =
+          item.speedBps ?? MOCK_SPEEDS_BPS[this.speedCursor++ % MOCK_SPEEDS_BPS.length];
+
+        let downloadedBytes = item.downloadedBytes;
+        let progress = item.progress;
+        let etaSec: number | null = item.etaSec;
+
+        if (item.totalBytes === null || item.totalBytes <= 0) {
+          downloadedBytes += speedBps;
+          progress = Math.min(100, item.progress + 2);
+          etaSec = null;
+        } else {
+          downloadedBytes = Math.min(item.totalBytes, item.downloadedBytes + speedBps);
+          progress = Math.min(100, Math.round((downloadedBytes / item.totalBytes) * 100));
+          const remaining = Math.max(0, item.totalBytes - downloadedBytes);
+          etaSec = remaining === 0 ? 0 : Math.ceil(remaining / speedBps);
+        }
+
+        if (/\bfail\b/i.test(item.title) && progress >= 50) {
+          return {
+            ...item,
+            status: 'failed',
+            downloadedBytes,
+            progress,
+            speedBps: null,
+            etaSec: null,
+            error: 'Network error',
+            finishedAt: nowIso,
+          };
+        }
+
+        if (progress >= 100) {
+          this.processingTicks.set(item.id, PROCESSING_TICKS);
+          return {
+            ...item,
+            status: 'processing',
+            progress: 100,
+            downloadedBytes: item.totalBytes ?? downloadedBytes,
+            speedBps: null,
+            etaSec: null,
+          };
+        }
+
+        return {
+          ...item,
+          downloadedBytes,
+          progress,
+          speedBps,
+          etaSec,
+        };
+      }
+
+      if (item.status === 'processing') {
+        const left = (this.processingTicks.get(item.id) ?? PROCESSING_TICKS) - 1;
+        if (left <= 0) {
+          this.processingTicks.delete(item.id);
+          return {
+            ...item,
+            status: 'done',
+            progress: 100,
+            speedBps: null,
+            etaSec: null,
+            finishedAt: nowIso,
+          };
+        }
+        this.processingTicks.set(item.id, left);
+        return item;
+      }
+
+      return item;
+    });
+
+    this.store.set(updated);
   }
 }

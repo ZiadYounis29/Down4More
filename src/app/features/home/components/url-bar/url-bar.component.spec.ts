@@ -1,65 +1,45 @@
-// Unresolved import: @shared/components/nav-buttons (owned by P5 T2, not on main yet).
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { UrlBarComponent } from './url-bar.component';
 
 describe('UrlBarComponent', () => {
-  let fixture: ComponentFixture<UrlBarComponent>;
-  let component: UrlBarComponent;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [UrlBarComponent],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(UrlBarComponent);
-    component = fixture.componentInstance;
+  it('disables plus when empty or loading and emits add on click and Enter', () => {
+    const fixture = TestBed.createComponent(UrlBarComponent);
+    const added: number[] = [];
+    fixture.componentInstance.add.subscribe(() => added.push(1));
     fixture.detectChanges();
-  });
 
-  it('emits add on plus button click', () => {
-    let emitted = false;
-    component.add.subscribe(() => {
-      emitted = true;
-    });
-    const button = fixture.nativeElement.querySelector('button');
-    button.click();
-    expect(emitted).toBe(true);
-  });
+    const plusBtn = fixture.nativeElement.querySelector('button[aria-label="Add link"]') as HTMLButtonElement;
+    const input = fixture.nativeElement.querySelector('input[aria-label="Link"]') as HTMLInputElement;
+    expect(plusBtn.disabled).toBe(true);
 
-  it('emits add on Enter in input', () => {
-    let emitted = false;
-    component.add.subscribe(() => {
-      emitted = true;
-    });
-    const input = fixture.nativeElement.querySelector('input');
     input.value = 'https://youtube.com/watch?v=abc';
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    const event = new KeyboardEvent('keydown', { key: 'Enter' });
-    input.dispatchEvent(event);
-    expect(emitted).toBe(true);
+    expect(plusBtn.disabled).toBe(false);
+
+    plusBtn.click();
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    expect(added).toHaveLength(2);
+
+    fixture.componentRef.setInput('loading', true);
+    fixture.detectChanges();
+    expect(plusBtn.disabled).toBe(true);
+    expect(input.disabled).toBe(true);
   });
 
-  it('disables plus when value is empty', () => {
-    component.value.set('');
+  it('shows inline error with role="alert" and emits fetch when enabled', () => {
+    const fixture = TestBed.createComponent(UrlBarComponent);
+    const fetched: number[] = [];
+    fixture.componentInstance.fetch.subscribe(() => fetched.push(1));
+    fixture.componentRef.setInput('error', "That doesn't look like a link.");
+    fixture.componentRef.setInput('canFetch', true);
     fixture.detectChanges();
-    const button = fixture.nativeElement.querySelector('button');
-    expect(button.disabled).toBe(true);
-  });
 
-  it('disables plus when loading', () => {
-    component.value.set('https://youtube.com/watch?v=abc');
-    component.loading.set(true);
-    fixture.detectChanges();
-    const button = fixture.nativeElement.querySelector('button');
-    expect(button.disabled).toBe(true);
-  });
+    const alert = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
+    expect(alert.textContent).toContain("That doesn't look like a link.");
 
-  it('shows error text when error input is set', () => {
-    component.error.set('That does not look like a link.');
-    fixture.detectChanges();
-    const errorEl = fixture.nativeElement.querySelector('.url-bar__error');
-    expect(errorEl).toBeTruthy();
-    expect(errorEl.textContent).toContain('That does not look like a link.');
+    const fetchBtn = fixture.nativeElement.querySelector('d4m-nav-buttons button') as HTMLButtonElement;
+    fetchBtn.click();
+    expect(fetched).toHaveLength(1);
   });
 });

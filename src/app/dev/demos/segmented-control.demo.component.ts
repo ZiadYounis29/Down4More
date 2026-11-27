@@ -1,44 +1,48 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-// UNRESOLVED IMPORT (not yet on main):
-// import { SegmentedControlComponent } from '@shared/ui/segmented-control';
+import { Option, SegmentedControlComponent } from '@shared/ui/segmented-control';
 
 @Component({
   selector: 'd4m-segmented-control-demo',
-  imports: [],
+  imports: [SegmentedControlComponent],
   template: `
     <h2>Segmented control</h2>
     <section class="demo-grid">
-      @for (opt of options; track opt) {
+      @for (opt of options; track opt.value) {
         <figure>
-          <figcaption>Selected: {{ opt }}</figcaption>
-          <div role="group">
-            @for (item of options; track item) {
-              <button
-                type="button"
-                [attr.aria-pressed]="selected() === item"
-                (click)="selected.set(item)"
-              >
-                {{ item }}
-              </button>
-            }
-          </div>
+          <figcaption>Selected: {{ opt.label }}</figcaption>
+          <d4m-segmented-control
+            [value]="opt.value"
+            [options]="options"
+            [label]="'Mode ' + opt.label"
+          />
         </figure>
       }
       <figure>
+        <figcaption>Interactive</figcaption>
+        <d4m-segmented-control
+          [(value)]="selected"
+          [options]="options"
+          label="Interactive mode"
+        />
+      </figure>
+      <figure>
         <figcaption>Disabled</figcaption>
-        <div role="group">
-          @for (item of options; track item) {
-            <button type="button" disabled [attr.aria-pressed]="item === 'video+audio'">
-              {{ item }}
-            </button>
-          }
-        </div>
+        <d4m-segmented-control
+          [value]="'video+audio'"
+          [options]="options"
+          [disabled]="true"
+          label="Disabled mode"
+        />
       </figure>
     </section>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SegmentedControlDemoComponent {
-  protected readonly options = ['video+audio', 'audio only', 'video only'] as const;
+  protected readonly options: Option<string>[] = [
+    { value: 'video+audio', label: 'video+audio' },
+    { value: 'audio-only', label: 'audio only' },
+    { value: 'video-only', label: 'video only' },
+  ];
   protected readonly selected = signal<string>('video+audio');
 }

@@ -42,7 +42,9 @@ export class HistoryComponent {
 
   /** newest first */
   private readonly sorted = computed(() =>
-    [...this.history.items()].sort((a, b) => b.finishedAt.localeCompare(a.finishedAt)),
+    [...this.history.items()].sort((a, b) =>
+      (b.finishedAt ?? '').localeCompare(a.finishedAt ?? ''),
+    ),
   );
 
   protected readonly shown = computed(() => {

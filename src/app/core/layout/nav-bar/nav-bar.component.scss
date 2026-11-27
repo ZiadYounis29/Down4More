@@ -1,0 +1,56 @@
+@use 'styles/breakpoints' as *;
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 8px;
+}
+
+.bar__logo {
+  display: inline-flex;
+  border-radius: var(--radius-icon-btn);
+}
+
+.bar__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nl {
+  padding: 9px 16px;
+  border-radius: var(--radius-icon-btn);
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+
+  &:hover {
+    background: var(--color-selected);
+  }
+
+  &.on {
+    background: var(--color-primary);
+    color: var(--color-bg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+@include compact {
+  .nl {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+
+  .bar__right {
+    gap: 4px;
+  }
+}

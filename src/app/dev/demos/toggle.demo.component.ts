@@ -1,43 +1,27 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-// UNRESOLVED IMPORT (not yet on main):
-// import { ToggleComponent } from '@shared/ui/toggle';
+import { ToggleComponent } from '@shared/ui/toggle';
 
 @Component({
   selector: 'd4m-toggle-demo',
-  imports: [],
+  imports: [ToggleComponent],
   template: `
     <h2>Toggle</h2>
     <section class="demo-grid">
       <figure>
         <figcaption>Off (interactive)</figcaption>
-        <button
-          type="button"
-          role="switch"
-          [attr.aria-checked]="offState()"
-          (click)="offState.set(!offState())"
-        >
-          {{ offState() ? 'On' : 'Off' }}
-        </button>
+        <d4m-toggle [(value)]="offState" label="Interactive toggle" />
       </figure>
       <figure>
         <figcaption>On</figcaption>
-        <button type="button" role="switch" aria-checked="true">On</button>
+        <d4m-toggle [value]="true" label="On toggle" />
       </figure>
       <figure>
         <figcaption>Disabled</figcaption>
-        <button type="button" role="switch" aria-checked="false" disabled>Off</button>
+        <d4m-toggle [value]="false" [disabled]="true" label="Disabled toggle" />
       </figure>
       <figure>
         <figcaption>With aria-expanded</figcaption>
-        <button
-          type="button"
-          role="switch"
-          [attr.aria-checked]="expanded()"
-          [attr.aria-expanded]="expanded()"
-          (click)="expanded.set(!expanded())"
-        >
-          {{ expanded() ? 'On' : 'Off' }}
-        </button>
+        <d4m-toggle [(value)]="expanded" [expanded]="expanded()" label="Expandable toggle" />
       </figure>
     </section>
   `,

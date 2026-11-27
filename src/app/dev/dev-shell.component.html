@@ -14,6 +14,16 @@
     }
   </nav>
   <div class="dev__content">
+    <div class="dev__toolbar">
+      <button
+        type="button"
+        class="btn btn--icon"
+        [attr.aria-label]="theme.theme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'"
+        (click)="theme.toggle()"
+      >
+        <d4m-icon [name]="theme.theme() === 'dark' ? 'sun' : 'moon'" [size]="18" />
+      </button>
+    </div>
     <router-outlet />
   </div>
 </div>

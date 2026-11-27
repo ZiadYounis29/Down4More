@@ -1,29 +1,23 @@
 <div class="cap" [class.cap--disabled]="disabled()">
   <div class="cap__group">
-    <label class="cap__lbl" id="cap-lbl">Caption</label>
-    <select
-      class="cap__sel"
-      aria-labelledby="cap-lbl"
-      [disabled]="disabled() || null"
-      [value]="captionEnabled() ? '1' : '0'"
-      (change)="onCaptionChange($event)"
-    >
-      <option value="0">off</option>
-      <option value="1">on</option>
-    </select>
+    <span class="cap__lbl">Caption</span>
+    <d4m-select
+      [value]="captionChoice()"
+      (valueChange)="onCaptionChange($event)"
+      [options]="boolOptions"
+      [disabled]="disabled()"
+      label="Caption"
+    />
   </div>
   <div class="cap__divider" aria-hidden="true"></div>
   <div class="cap__group">
-    <label class="cap__lbl" id="sep-lbl">Separate file</label>
-    <select
-      class="cap__sel"
-      aria-labelledby="sep-lbl"
-      [disabled]="!captionEnabled() || lockSeparate() || disabled() || null"
-      [value]="(captionEnabled() && separateFile()) || lockSeparate() ? '1' : '0'"
-      (change)="onSeparateChange($event)"
-    >
-      <option value="0">off</option>
-      <option value="1">on</option>
-    </select>
+    <span class="cap__lbl">Separate file</span>
+    <d4m-select
+      [value]="separateChoice()"
+      (valueChange)="onSeparateChange($event)"
+      [options]="boolOptions"
+      [disabled]="!captionEnabled() || lockSeparate() || disabled()"
+      label="Separate file"
+    />
   </div>
 </div>

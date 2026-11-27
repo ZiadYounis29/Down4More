@@ -1,33 +1,45 @@
-.url-bar {
+:host {
+  display: block;
+}
+
+.bar {
   display: flex;
-  gap: 12px;
   align-items: center;
+  gap: 12px;
   padding-bottom: 10px;
   border-bottom: 2px solid var(--color-primary);
+  transition: border-color 0.15s ease;
 
   &:focus-within {
     border-bottom-color: var(--color-accent);
   }
 }
 
-.url-bar__input {
+.bar__input {
   flex: 1;
+  min-width: 0;
+  height: 44px;
   border: none;
   background: transparent;
   font: inherit;
   font-size: 20px;
-  height: 44px;
-  min-width: 0;
   color: var(--color-text);
-  outline: none;
 
   &::placeholder {
     color: var(--color-text-muted);
   }
+
+  &:focus {
+    outline: none;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
 }
 
-.url-bar__error {
-  margin-top: 8px;
+.bar__error {
+  margin: 8px 0 0;
   font-size: 13px;
   font-weight: 700;
   color: var(--color-danger);

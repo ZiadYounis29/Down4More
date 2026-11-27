@@ -1,131 +1,154 @@
-// Unresolved imports (not on main yet): @core/utils/parse-url, @core/utils/fallback-quality,
-// @core/utils/nearest-bitrate — owned by P3 T1/T2. This spec cannot run until those are merged.
 import { TestBed } from '@angular/core/testing';
-import { MockApiService } from './mock-api.service';
-import { ApiService } from './api.service';
+import { firstValueFrom } from 'rxjs';
 import {
-  DownloadAction,
-  DownloadItem,
-  DownloadOptionsCatalog,
-  DownloadSettings,
-  FetchResult,
-  MediaItem,
-} from '@core/models';
-import { MOCK_CATALOG, MOCK_DOWNLOADS, MOCK_PLAYLIST_ITEMS } from '@core/mocks/mock-data';
-
-const CATALOG: DownloadOptionsCatalog = MOCK_CATALOG;
-
-const SETTINGS: DownloadSettings = {
-  mode: 'video+audio',
-  quality: '1080p',
-  format: 'mp4',
-  bitrate: 192,
-  captions: { enabled: false, separateFile: false },
-};
-
-const ITEM: MediaItem = {
-  id: 'm-1',
-  url: 'https://youtube.com/watch?v=abc',
-  title: 'Test video',
-  thumbnailUrl: null,
-  durationSec: 120,
-  channelName: 'Down4More Demo',
-  sizeBytes: 41943040,
-};
+  DEFAULT_DOWNLOAD_SETTINGS,
+  MOCK_CATALOG,
+  MOCK_PLAYLIST_ITEMS,
+} from '@core/mocks/mock-data';
+import { DownloadItem } from '@core/models';
+import { MockApiService } from './mock-api.service';
 
 describe('MockApiService', () => {
   let service: MockApiService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [MockApiService, { provide: ApiService, useExisting: MockApiService }],
-    });
+    vi.useFakeTimers();
+    TestBed.configureTestingModule({});
     service = TestBed.inject(MockApiService);
   });
 
-  it('fetchInfo returns a FetchResult with catalog MOCK_CATALOG', (done) => {
-    service.fetchInfo(['https://youtube.com/watch?v=p-1']).subscribe(result => {
-      expect(result.catalog).toBe(MOCK_CATALOG);
-      expect(result.items.length).toBeGreaterThan(0);
-      done();
-    });
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  it('fetchInfo with "fail" URL produces failed entries and empty items', (done) => {
-    service.fetchInfo(['https://youtube.com/watch?v=fail-video']).subscribe(result => {
-      expect(result.failed.length).toBeGreaterThan(0);
-      expect(result.items).toEqual([]);
-      done();
-    });
+  it('fetchInfo handles single video, single playlist, multi-link batch, fail, big, and all failed', async () => {
+    const singleP = firstValueFrom(service.fetchInfo(['https://youtube.com/watch?v=abc']));
+    vi.advanceTimersByTime(600);
+    const singleRes = await singleP;
+    expect(singleRes.kind).toBe('single');
+    expect(singleRes.items).toHaveLength(1);
+    expect(singleRes.catalog).toEqual(MOCK_CATALOG);
+
+    const plP = firstValueFrom(service.fetchInfo(['https://youtube.com/playlist?list=PL1']));
+    vi.advanceTimersByTime(600);
+    const plRes = await plP;
+    expect(plRes.kind).toBe('playlist');
+    expect(plRes.items.map((i) => i.title)).toEqual(MOCK_PLAYLIST_ITEMS.map((i) => i.title));
+
+    const batchP = firstValueFrom(
+      service.fetchInfo(['https://youtube.com/watch?v=1', 'https://youtube.com/watch?v=2']),
+    );
+    vi.advanceTimersByTime(600);
+    const batchRes = await batchP;
+    expect(batchRes.kind).toBe('playlist');
+    expect(batchRes.items).toHaveLength(2);
+
+    const bigP = firstValueFrom(service.fetchInfo(['https://youtube.com/playlist?list=big']));
+    vi.advanceTimersByTime(600);
+    const bigRes = await bigP;
+    expect(bigRes.items).toHaveLength(300);
+
+    const partialP = firstValueFrom(
+      service.fetchInfo(['https://youtube.com/watch?v=ok', 'https://youtube.com/watch?v=fail']),
+    );
+    vi.advanceTimersByTime(600);
+    const partialRes = await partialP;
+    expect(partialRes.items).toHaveLength(1);
+    expect(partialRes.failed).toHaveLength(1);
+
+    const allFailP = firstValueFrom(service.fetchInfo(['https://youtube.com/watch?v=fail']));
+    vi.advanceTimersByTime(600);
+    const allFailRes = await allFailP;
+    expect(allFailRes.items).toEqual([]);
+    expect(allFailRes.failed).toHaveLength(1);
   });
 
-  it('fetchInfo single video returns kind single', (done) => {
-    service.fetchInfo(['https://youtube.com/watch?v=p-1']).subscribe(result => {
-      expect(result.kind).toBe('single');
-      done();
-    });
+  it('startDownloads resolves per-video unsupported quality to nearest lower', async () => {
+    const p4 = MOCK_PLAYLIST_ITEMS[3]; // qualities: 1080p, 720p, 480p, 360p; bitrates: 96,128,160,192
+    let latest: DownloadItem[] = [];
+    const sub = service.downloads$().subscribe((list) => (latest = list));
+
+    await firstValueFrom(
+      service.startDownloads([
+        {
+          item: p4,
+          settings: { ...DEFAULT_DOWNLOAD_SETTINGS, quality: '2160p', bitrate: 320 },
+        },
+      ]),
+    );
+
+    const created = latest.find((d) => d.title === p4.title && d.status === 'queued');
+    expect(created).toBeTruthy();
+    expect(created!.settings.quality).toBe('1080p');
+    expect(created!.settings.bitrate).toBe(192);
+    sub.unsubscribe();
   });
 
-  it('control pause sets status to paused and clears speed/eta', () => {
-    const item = MOCK_DOWNLOADS.find(i => i.status === 'downloading')!;
-    service.control('pause', [item.id]).subscribe();
-    const updated = MOCK_DOWNLOADS.find(i => i.id === item.id);
-    expect(updated?.status).toBe('paused');
-    expect(updated?.speedBps).toBeNull();
-    expect(updated?.etaSec).toBeNull();
+  it('obeys concurrency cap and transitions 100% -> processing (3 ticks) -> done in downloads$ and history', async () => {
+    let latest: DownloadItem[] = [];
+    const sub = service.downloads$().subscribe((list) => (latest = list));
+
+    // Pause seeded active downloads so queue slots open up for our test item
+    const activeIds = latest.filter((d) => d.status === 'downloading').map((d) => d.id);
+    await firstValueFrom(service.control('pause', activeIds));
+
+    const smallItem = { ...MOCK_PLAYLIST_ITEMS[0], id: 'fast-1', title: 'Fast Clip', sizeBytes: 1000 };
+    await firstValueFrom(
+      service.startDownloads([{ item: smallItem, settings: DEFAULT_DOWNLOAD_SETTINGS }]),
+    );
+
+    // Tick 1: starts downloading
+    vi.advanceTimersByTime(1000);
+    let fast = latest.find((d) => d.title === 'Fast Clip')!;
+    expect(fast.status).toBe('downloading');
+
+    // Tick 2: advances to 100% -> processing
+    vi.advanceTimersByTime(1000);
+    fast = latest.find((d) => d.title === 'Fast Clip')!;
+    expect(fast.status).toBe('processing');
+
+    // Ticks 3 & 4: still processing
+    vi.advanceTimersByTime(2000);
+    fast = latest.find((d) => d.title === 'Fast Clip')!;
+    expect(fast.status).toBe('processing');
+
+    // Tick 5: transitions to done and appears in history with same id
+    vi.advanceTimersByTime(1000);
+    fast = latest.find((d) => d.title === 'Fast Clip')!;
+    expect(fast.status).toBe('done');
+    expect(fast.finishedAt).toBeTruthy();
+
+    const hist = await firstValueFrom(service.history('Fast Clip'));
+    expect(hist).toHaveLength(1);
+    expect(hist[0].id).toBe(fast.id);
+    expect(hist[0].finishedAt).toBe(fast.finishedAt);
+
+    sub.unsubscribe();
   });
 
-  it('control resume returns paused to queued', () => {
-    const item = MOCK_DOWNLOADS.find(i => i.status === 'paused')!;
-    service.control('resume', [item.id]).subscribe();
-    const updated = MOCK_DOWNLOADS.find(i => i.id === item.id);
-    expect(updated?.status).toBe('queued');
-  });
+  it('control dismiss keeps history, cancel removes everywhere, and retry moves failed back to queued', async () => {
+    let latest: DownloadItem[] = [];
+    const sub = service.downloads$().subscribe((list) => (latest = list));
 
-  it('control cancel removes the item', () => {
-    const item = MOCK_DOWNLOADS.find(i => i.status === 'queued')!;
-    service.control('cancel', [item.id]).subscribe();
-    expect(MOCK_DOWNLOADS.find(i => i.id === item.id)).toBeUndefined();
-  });
+    const doneItem = latest.find((d) => d.status === 'done')!;
+    const failedItem = latest.find((d) => d.status === 'failed')!;
+    const activeItem = latest.find((d) => d.status === 'downloading')!;
 
-  it('control retry moves failed to queued and clears error', () => {
-    const item = MOCK_DOWNLOADS.find(i => i.status === 'failed')!;
-    service.control('retry', [item.id]).subscribe();
-    const updated = MOCK_DOWNLOADS.find(i => i.id === item.id);
-    expect(updated?.status).toBe('queued');
-    expect(updated?.error).toBeUndefined();
-    expect(updated?.progress).toBe(0);
-  });
+    await firstValueFrom(service.control('dismiss', [doneItem.id]));
+    expect(latest.some((d) => d.id === doneItem.id)).toBe(false);
+    const histAfterDismiss = await firstValueFrom(service.history());
+    expect(histAfterDismiss.some((d) => d.id === doneItem.id)).toBe(true);
 
-  it('control dismiss hides from store view', () => {
-    const item = MOCK_DOWNLOADS.find(i => i.status === 'done')!;
-    service.control('dismiss', [item.id]).subscribe();
-    // The item remains in store but is in dismissed set
-    expect(item.id).toBeTruthy();
-  });
+    await firstValueFrom(service.control('cancel', [activeItem.id]));
+    expect(latest.some((d) => d.id === activeItem.id)).toBe(false);
 
-  it('control prioritize gives lowest priority numbers', () => {
-    const items = MOCK_DOWNLOADS.filter(i => i.status === 'queued').slice(0, 2);
-    service.control('prioritize', items.map(i => i.id)).subscribe();
-    const updated = items.map(i => MOCK_DOWNLOADS.find(x => x.id === i.id)!);
-    expect(updated[0].priority).toBeLessThan(updated[1].priority);
-  });
+    await firstValueFrom(service.control('retry', [failedItem.id]));
+    const retried = latest.find((d) => d.id === failedItem.id)!;
+    expect(retried.status).toBe('queued');
+    expect(retried.error).toBeUndefined();
+    const histAfterRetry = await firstValueFrom(service.history());
+    expect(histAfterRetry.some((d) => d.id === failedItem.id)).toBe(false);
 
-  it('history returns done and failed items newest first', (done) => {
-    service.history().subscribe(rows => {
-      expect(rows.length).toBeGreaterThan(0);
-      expect(rows.every(r => r.status === 'done' || r.status === 'failed')).toBe(true);
-      done();
-    });
-  });
-
-  it('startDownloads creates queued items with resolved settings', (done) => {
-    service.startDownloads([{ item: ITEM, settings: SETTINGS }]).subscribe(() => {
-      const added = MOCK_DOWNLOADS.find(i => i.id === 'm-1');
-      expect(added).toBeTruthy();
-      expect(added?.status).toBe('queued');
-      expect(added?.progress).toBe(0);
-      done();
-    });
+    sub.unsubscribe();
   });
 });

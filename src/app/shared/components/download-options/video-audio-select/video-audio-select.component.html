@@ -1,18 +1,6 @@
-<div
-  role="group"
-  [attr.aria-label]="label() || 'Media mode'"
-  class="seg"
-  [class.seg--disabled]="disabled()"
->
-  @for (opt of options; track opt.value) {
-    <button
-      type="button"
-      class="pill"
-      [attr.aria-pressed]="value() === opt.value"
-      [disabled]="disabled() || null"
-      (click)="select(opt.value)"
-    >
-      {{ opt.label }}
-    </button>
-  }
-</div>
+<d4m-segmented-control
+  [(value)]="value"
+  [options]="options"
+  [disabled]="disabled()"
+  [label]="label() || 'Media mode'"
+/>

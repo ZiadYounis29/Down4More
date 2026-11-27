@@ -1,42 +1,50 @@
-// STUB owned by P4: overwritten with the real demo (P4 T6).
-// Unresolved import chain: d4m-url-bar imports @shared/components/nav-buttons (owned by P5 T2, not on main yet).
-import { ChangeDetectionStrategy, Component, model } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { UrlBarComponent } from '../features/home/components/url-bar/url-bar.component';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { UrlBarComponent } from '@features/home/components/url-bar';
 
 @Component({
   selector: 'd4m-url-bar-demo',
+  imports: [UrlBarComponent],
   template: `
     <h2>Url bar (Home)</h2>
-
-    <div class="demo__case">
-      <h3>Empty</h3>
-      <d4m-url-bar />
-    </div>
-
-    <div class="demo__case">
-      <h3>With text</h3>
-      <d4m-url-bar [(value)]="withText" />
-    </div>
-
-    <div class="demo__case">
-      <h3>Error</h3>
-      <d4m-url-bar [(value)]="withText" error="That doesn't look like a link." />
-    </div>
-
-    <div class="demo__case">
-      <h3>Loading</h3>
-      <d4m-url-bar [(value)]="withText" [loading]="true" />
-    </div>
-
-    <div class="demo__case">
-      <h3>Fetch disabled</h3>
-      <d4m-url-bar [(value)]="withText" [canFetch]="false" />
-    </div>
+    <section class="demo__case">
+      <p class="demo__caption">Empty (plus and fetch disabled)</p>
+      <d4m-url-bar [(value)]="emptyVal" [canFetch]="false" />
+    </section>
+    <section class="demo__case">
+      <p class="demo__caption">With text (last event: {{ lastEvent() }})</p>
+      <d4m-url-bar
+        [(value)]="textVal"
+        [canFetch]="true"
+        (add)="lastEvent.set('add')"
+        (fetch)="lastEvent.set('fetch')"
+      />
+    </section>
+    <section class="demo__case">
+      <p class="demo__caption">Error</p>
+      <d4m-url-bar
+        [value]="'bad link'"
+        error="That doesn't look like a link."
+        [canFetch]="true"
+      />
+    </section>
+    <section class="demo__case">
+      <p class="demo__caption">Loading</p>
+      <d4m-url-bar
+        [value]="'https://youtube.com/watch?v=abc'"
+        [loading]="true"
+        [canFetch]="true"
+      />
+    </section>
+    <section class="demo__case">
+      <p class="demo__caption">Fetch disabled (typing invalid/empty with no list)</p>
+      <d4m-url-bar [value]="'https://youtube.com/watch?v=abc'" [canFetch]="false" />
+    </section>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, UrlBarComponent],
 })
 export class UrlBarDemoComponent {
-  protected readonly withText = model('https://youtube.com/watch?v=abc');
+  protected readonly emptyVal = signal('');
+  protected readonly textVal = signal('https://youtube.com/watch?v=dQw4w9WgXcQ');
+  protected readonly lastEvent = signal('none');
 }

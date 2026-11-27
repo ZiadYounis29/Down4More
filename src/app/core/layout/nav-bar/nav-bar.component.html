@@ -1,0 +1,20 @@
+<nav class="bar" aria-label="Main">
+  <a class="bar__logo" routerLink="/" aria-label="Down4More home">
+    <d4m-logo variant="mark" [height]="46" />
+  </a>
+  <div class="bar__right">
+    @for (item of items(); track item.path) {
+      <a class="nl" [routerLink]="item.path" routerLinkActive="on" ariaCurrentWhenActive="page">
+        {{ item.label }}
+      </a>
+    }
+    <button
+      type="button"
+      class="btn btn--icon"
+      [attr.aria-label]="toggleLabel()"
+      (click)="theme.toggle()"
+    >
+      <d4m-icon [name]="theme.theme() === 'dark' ? 'sun' : 'moon'" [size]="18" />
+    </button>
+  </div>
+</nav>

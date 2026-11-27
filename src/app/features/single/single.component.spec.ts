@@ -21,8 +21,9 @@ const MOCK_RESULT: FetchResult = {
       url: 'https://example.com/watch?v=1',
       title: 'My Video: Test?',
       durationSec: 120,
-      thumbnailUrl: 'https://example.com/thumb.jpg',
-      sizeBytes: 40_000_000,
+      thumbnailUrl: null,
+      sizeBytes: 41_943_040,
+      channelName: 'Test Channel',
     },
   ],
   failed: [],
@@ -46,30 +47,39 @@ describe('SingleComponent', () => {
     }).compileComponents();
   });
 
-  it('renders .single grid and toggles fs-on / trim-on classes', () => {
+  it('renders .single grid with real components and toggles fs-on / trim-on classes', () => {
     const fixture = TestBed.createComponent(SingleComponent);
     fixture.detectChanges();
 
     const grid = fixture.nativeElement.querySelector('.single') as HTMLElement;
     expect(grid.classList.contains('fs-on')).toBe(false);
     expect(grid.classList.contains('trim-on')).toBe(false);
+    expect(fixture.nativeElement.querySelector('d4m-page-container')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('d4m-download-options')).toBeTruthy();
 
-    const fsBtn = fixture.nativeElement.querySelector('.a-framesize button') as HTMLButtonElement;
+    const fsBtn = fixture.nativeElement.querySelector('.a-framesize [role="switch"]') as HTMLButtonElement;
     fsBtn.click();
     fixture.detectChanges();
     expect(grid.classList.contains('fs-on')).toBe(true);
 
-    const trimBtn = fixture.nativeElement.querySelector('.a-trim button') as HTMLButtonElement;
+    const trimBtn = fixture.nativeElement.querySelector('.a-trim [role="switch"]') as HTMLButtonElement;
     trimBtn.click();
     fixture.detectChanges();
     expect(grid.classList.contains('trim-on')).toBe(true);
   });
 
-  it('starts download with array of 1 and navigates to /downloads', () => {
+  it('updates live estimated size and sends request of 1 on download', () => {
     const fixture = TestBed.createComponent(SingleComponent);
     fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.a-info')?.textContent).toContain('40 MB');
 
-    const dlBtn = fixture.nativeElement.querySelector('.a-download') as HTMLButtonElement;
+    const qualitySel = fixture.nativeElement.querySelector('d4m-quality select') as HTMLSelectElement;
+    qualitySel.value = '2'; // 720p
+    qualitySel.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.a-info')?.textContent).toContain('23 MB');
+
+    const dlBtn = fixture.nativeElement.querySelector('.a-download button') as HTMLButtonElement;
     dlBtn.click();
 
     expect(downloadSpy.start).toHaveBeenCalledTimes(1);
@@ -85,7 +95,7 @@ describe('SingleComponent', () => {
     const fixture = TestBed.createComponent(SingleComponent);
     fixture.detectChanges();
 
-    const dlBtn = fixture.nativeElement.querySelector('.a-download') as HTMLButtonElement;
+    const dlBtn = fixture.nativeElement.querySelector('.a-download button') as HTMLButtonElement;
     dlBtn.click();
     fixture.detectChanges();
 

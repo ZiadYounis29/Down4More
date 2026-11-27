@@ -1,0 +1,53 @@
+<div
+  class="nb"
+  [class.nb--full]="fullWidth() === true"
+  [class.nb--full-compact]="fullWidth() === 'compact'"
+>
+  @if (startButtons().length) {
+    <div class="nb__group nb__group--start">
+      @for (btn of startButtons(); track btn.id) {
+        <button
+          type="button"
+          [class]="buttonClass(btn)"
+          [disabled]="!!btn.disabled"
+          [attr.aria-busy]="btn.loading ? 'true' : null"
+          [attr.aria-pressed]="btn.pressed !== undefined ? btn.pressed : null"
+          [attr.title]="btn.title ?? null"
+          (click)="onClick(btn)"
+        >
+          @if (btn.icon === 'chevron-left') {
+            <d4m-icon [name]="btn.icon" [size]="iconSize()" />
+          }
+          <span>{{ btn.label }}</span>
+          @if (btn.icon && btn.icon !== 'chevron-left') {
+            <d4m-icon [name]="btn.icon" [size]="iconSize()" />
+          }
+        </button>
+      }
+    </div>
+  }
+
+  @if (endButtons().length) {
+    <div class="nb__group nb__group--end">
+      @for (btn of endButtons(); track btn.id) {
+        <button
+          type="button"
+          [class]="buttonClass(btn)"
+          [disabled]="!!btn.disabled"
+          [attr.aria-busy]="btn.loading ? 'true' : null"
+          [attr.aria-pressed]="btn.pressed !== undefined ? btn.pressed : null"
+          [attr.title]="btn.title ?? null"
+          (click)="onClick(btn)"
+        >
+          @if (btn.icon === 'chevron-left') {
+            <d4m-icon [name]="btn.icon" [size]="iconSize()" />
+          }
+          <span>{{ btn.label }}</span>
+          @if (btn.icon && btn.icon !== 'chevron-left') {
+            <d4m-icon [name]="btn.icon" [size]="iconSize()" />
+          }
+        </button>
+      }
+    </div>
+  }
+</div>
