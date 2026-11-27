@@ -1,0 +1,98 @@
+<d4m-toggle-panel
+  label="Trim Video"
+  padding="roomy"
+  [(open)]="open"
+  [disabled]="disabled()"
+  [title]="disabled() ? 'Duration unknown' : ''"
+>
+  <div class="trim">
+    <div class="left">
+      <div class="segments">
+        <div class="rail" aria-hidden="true">
+          <div class="rail-dot" [style.top]="railDotTop()"></div>
+        </div>
+        <div class="list">
+          @for (seg of displaySegments(); track $index) {
+            <div
+              class="seg-field"
+              [class.seg-field--active]="activeIndex() === $index"
+              [class.seg-field--invalid]="seg.startSec >= seg.endSec"
+              role="button"
+              tabindex="0"
+              (click)="selectSegment($index)"
+              (keydown.enter)="selectSegment($index)"
+              (keydown.space)="selectSegment($index)"
+            >
+              <span class="seg-field__label">{{ seg.label }}</span>
+              <span class="seg-field__range">
+                {{ formatTime(seg.startSec) }} to {{ formatTime(seg.endSec) }}
+              </span>
+              @if (displaySegments().length > 1) {
+                <button
+                  type="button"
+                  class="seg-field__remove"
+                  [attr.aria-label]="'Remove segment ' + ($index + 1)"
+                  (click)="removeSegment($index, $event)"
+                >
+                  <d4m-icon name="x" [size]="14" />
+                </button>
+              }
+            </div>
+          }
+
+          <button
+            type="button"
+            class="btn btn--circle add"
+            aria-label="Add segment"
+            (click)="addSegment()"
+          >
+            <d4m-icon name="plus" [size]="18" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="preview" aria-hidden="true">
+        <d4m-icon name="play" [size]="44" />
+      </div>
+
+      <div class="timeline">
+        <span class="lab">{{ formatTime(activeSegment().startSec) }}</span>
+        <div class="track" #track>
+          <div
+            class="knob start"
+            [class.knob--dragging]="dragging() === 'start'"
+            [style.left.%]="startPercent()"
+            role="slider"
+            tabindex="0"
+            aria-label="Segment start"
+            [attr.aria-valuemin]="0"
+            [attr.aria-valuemax]="activeSegment().endSec - 1"
+            [attr.aria-valuenow]="activeSegment().startSec"
+            (keydown)="onKnobKeyDown('start', $event)"
+            (pointerdown)="onKnobPointerDown('start', $event)"
+            (pointermove)="onKnobPointerMove('start', $event)"
+            (pointerup)="onKnobPointerUp('start', $event)"
+          ></div>
+          <div
+            class="knob end"
+            [class.knob--dragging]="dragging() === 'end'"
+            [style.left.%]="endPercent()"
+            role="slider"
+            tabindex="0"
+            aria-label="Segment end"
+            [attr.aria-valuemin]="activeSegment().startSec + 1"
+            [attr.aria-valuemax]="maxSec()"
+            [attr.aria-valuenow]="activeSegment().endSec"
+            (keydown)="onKnobKeyDown('end', $event)"
+            (pointerdown)="onKnobPointerDown('end', $event)"
+            (pointermove)="onKnobPointerMove('end', $event)"
+            (pointerup)="onKnobPointerUp('end', $event)"
+          ></div>
+        </div>
+        <span class="lab">{{ formatTime(activeSegment().endSec) }}</span>
+      </div>
+    </div>
+  </div>
+</d4m-toggle-panel>
