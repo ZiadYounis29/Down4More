@@ -1,7 +1,8 @@
-<div class="select-wrap" [class.select-wrap--disabled]="disabled()">
+<div class="select-wrap" [class.select-wrap--disabled]="disabled()" [class.select-wrap--open]="menuOpen()">
   <select
     #selectEl
-    class="select"
+    class="select-native"
+    tabindex="-1"
     [attr.aria-label]="label() || null"
     [disabled]="disabled()"
     (change)="onSelectionChange($event)"
@@ -16,6 +17,19 @@
       </option>
     }
   </select>
+
+  <button
+    type="button"
+    class="select"
+    [attr.aria-label]="label() || null"
+    [attr.aria-expanded]="menuOpen()"
+    aria-haspopup="listbox"
+    [disabled]="disabled()"
+    (click)="toggleMenu()"
+  >
+    <span class="select__text">{{ selectedLabel() }}</span>
+  </button>
+
   <svg
     class="chevron"
     viewBox="0 0 24 24"
@@ -30,4 +44,22 @@
   >
     <path d="M6 9l6 6 6-6" />
   </svg>
+
+  @if (menuOpen()) {
+    <div class="select-menu" role="listbox" [attr.aria-label]="label() || null">
+      @for (option of options(); track $index) {
+        <button
+          type="button"
+          role="option"
+          class="select-option"
+          [class.select-option--selected]="$index === selectedIndex()"
+          [attr.aria-selected]="$index === selectedIndex()"
+          [disabled]="!!option.disabled"
+          (click)="choose($index)"
+        >
+          {{ option.label }}
+        </button>
+      }
+    </div>
+  }
 </div>

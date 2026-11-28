@@ -1,3 +1,132 @@
-<d4m-toggle-panel label="Frame Size" [(open)]="open">
-  <div class="fs__placeholder" expanded>Frame size options go here</div>
+<d4m-toggle-panel label="Frame Size" [(open)]="open" [disabled]="disabled()">
+  <div class="fs" expanded>
+    <div class="fs__top">
+      <div class="fs__preview-wrap">
+        <div
+          #preview
+          class="fs__preview"
+          [class.fs__preview--blur]="value().fill === 'blur'"
+          [class.fs__preview--black]="value().fill === 'black'"
+          [class.fs__preview--crop]="value().fill === 'crop'"
+        >
+          @if (thumbnailUrl(); as src) {
+            <img class="fs__preview-bg" [src]="src" alt="" />
+          } @else {
+            <div class="fs__preview-placeholder" aria-hidden="true">
+              <d4m-icon name="play" [size]="22" />
+            </div>
+          }
+          <div
+            class="fs__frame"
+            [class.fs__frame--dragging]="dragging() !== null"
+            [style.left.%]="crop().x * 100"
+            [style.top.%]="crop().y * 100"
+            [style.width.%]="crop().width * 100"
+            [style.height.%]="crop().height * 100"
+            role="slider"
+            tabindex="0"
+            aria-label="Visible video frame region (use arrow keys or drag to position)"
+            [attr.aria-valuetext]="cropSummary()"
+            (keydown)="onFrameKeyDown($event)"
+            (pointerdown)="onFramePointerDown('move', $event)"
+            (pointermove)="onFramePointerMove($event)"
+            (pointerup)="onFramePointerUp($event)"
+            (pointercancel)="onFramePointerUp($event)"
+          >
+            @for (edge of edges; track edge) {
+              <span
+                [class]="'fs__edge fs__edge--' + edge"
+                aria-hidden="true"
+                (pointerdown)="onFramePointerDown(edge, $event)"
+                (pointermove)="onFramePointerMove($event)"
+                (pointerup)="onFramePointerUp($event)"
+                (pointercancel)="onFramePointerUp($event)"
+              ></span>
+            }
+            @for (corner of corners; track corner) {
+              <span
+                [class]="'fs__corner fs__corner--' + corner"
+                aria-hidden="true"
+                (pointerdown)="onFramePointerDown(corner, $event)"
+                (pointermove)="onFramePointerMove($event)"
+                (pointerup)="onFramePointerUp($event)"
+                (pointercancel)="onFramePointerUp($event)"
+              ></span>
+            }
+          </div>
+        </div>
+        <span class="fs__coords" aria-hidden="true">{{ cropSummary() }}</span>
+      </div>
+
+      <div class="fs__fill">
+        <span class="fs__label">Fill Type</span>
+        <div class="fs__pills" role="group" aria-label="Fill type">
+          @for (opt of fillOptions; track opt.value) {
+            <button
+              type="button"
+              class="pill fs__pill"
+              [attr.aria-pressed]="value().fill === opt.value"
+              (click)="setFill(opt.value)"
+            >
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="fs__aspect">
+      <span class="fs__label">Aspect Ratio</span>
+      <div class="fs__pills" role="group" aria-label="Aspect ratio">
+        @for (opt of aspectOptions; track opt.value) {
+          <button
+            type="button"
+            class="pill fs__pill"
+            [attr.aria-pressed]="value().aspect === opt.value"
+            (click)="setAspect(opt.value)"
+          >
+            {{ opt.label }}
+          </button>
+        }
+
+        <div
+          class="fs__custom"
+          [class.fs__custom--active]="value().aspect === 'custom'"
+          (click)="setAspect('custom')"
+        >
+          <button
+            type="button"
+            class="fs__custom-btn"
+            [attr.aria-pressed]="value().aspect === 'custom'"
+            (click)="setAspect('custom')"
+          >
+            Custom
+          </button>
+          <input
+            type="number"
+            class="fs__num"
+            min="0.1"
+            max="999"
+            step="0.1"
+            aria-label="Custom width ratio"
+            [value]="value().customW != null ? value().customW!.toFixed(1) : ''"
+            (focus)="setAspect('custom')"
+            (input)="onCustomChange('customW', $event)"
+          />
+          <span class="fs__colon" aria-hidden="true">:</span>
+          <input
+            type="number"
+            class="fs__num"
+            min="0.1"
+            max="999"
+            step="0.1"
+            aria-label="Custom height ratio"
+            [value]="value().customH != null ? value().customH!.toFixed(1) : ''"
+            (focus)="setAspect('custom')"
+            (input)="onCustomChange('customH', $event)"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
 </d4m-toggle-panel>

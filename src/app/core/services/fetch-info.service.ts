@@ -12,4 +12,8 @@ export class FetchInfoService {
   load(urls: string[]): Observable<FetchResult> {
     return this.api.fetchInfo(urls).pipe(tap((result) => this.lastResult.set(result)));
   }
+
+  clear(): void {
+    this.lastResult.set(null);
+  }
 }

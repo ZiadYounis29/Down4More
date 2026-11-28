@@ -13,6 +13,7 @@ import { LogoComponent } from '@shared/components/logo';
 import { PageContainerComponent } from '@shared/components/page-container';
 import { UrlBarComponent } from './components/url-bar';
 import { UrlListComponent } from './components/url-list';
+import { HomeStateService } from './home-state.service';
 import { MAX_LINKS, UrlEntry } from './url-entry.model';
 
 @Component({
@@ -21,18 +22,17 @@ import { MAX_LINKS, UrlEntry } from './url-entry.model';
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, LogoComponent, PageContainerComponent, UrlBarComponent, UrlListComponent],
 })
 export class HomeComponent {
   private readonly parser = inject(UrlParserService);
   private readonly fetchInfo = inject(FetchInfoService);
+  private readonly homeState = inject(HomeStateService);
   private readonly router = inject(Router);
 
   private readonly urlBar = viewChild(UrlBarComponent);
-  private nextId = 1;
 
-  protected readonly links = signal<UrlEntry[]>([]);
-  protected readonly draft = signal('');
+  protected readonly links = this.homeState.links;
+  protected readonly draft = this.homeState.draft;
   protected readonly draftError = signal<string | null>(null);
   protected readonly fetching = signal(false);
   protected readonly fetchError = signal<string | null>(null);
@@ -42,16 +42,33 @@ export class HomeComponent {
     () => this.links().length > 0 || this.draft().trim().length > 0,
   );
 
-  protected addFromDraft(): boolean {
-    const raw = this.draft();
-    const pieces = raw
+  protected addFromDraft(): void {
+    const { added, skipped, firstError } = this.parseDraft();
+
+    if (added.length > 0) {
+      const nextList = [...this.links(), ...added];
+      this.links.set(nextList);
+      this.fetchError.set(null);
+      this.announcement.set(`Link added, ${nextList.length} ${nextList.length === 1 ? 'link' : 'links'} in the list`);
+    }
+
+    if (skipped.length > 0) {
+      this.draft.set(skipped.join(' '));
+      this.draftError.set(firstError);
+      this.urlBar()?.focus();
+      return;
+    }
+
+    this.draft.set('');
+    this.draftError.set(null);
+    this.urlBar()?.focus();
+  }
+
+  private parseDraft(): { added: UrlEntry[]; skipped: string[]; firstError: string | null } {
+    const pieces = this.draft()
       .split(/[\s,]+/)
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
-
-    if (pieces.length === 0) {
-      return true;
-    }
 
     const current = this.links();
     const existingKeys = new Set(current.map((e) => e.key));
@@ -81,31 +98,14 @@ export class HomeComponent {
 
       existingKeys.add(parsed.key);
       added.push({
-        id: `url-${this.nextId++}`,
+        id: this.homeState.allocateId(),
         url: parsed.url,
         key: parsed.key,
         kind: parsed.kind,
       });
     }
 
-    if (added.length > 0) {
-      const nextList = [...current, ...added];
-      this.links.set(nextList);
-      this.fetchError.set(null);
-      this.announcement.set(`Link added, ${nextList.length} ${nextList.length === 1 ? 'link' : 'links'} in the list`);
-    }
-
-    if (skipped.length > 0) {
-      this.draft.set(skipped.join(' '));
-      this.draftError.set(firstError);
-      this.urlBar()?.focus();
-      return false;
-    }
-
-    this.draft.set('');
-    this.draftError.set(null);
-    this.urlBar()?.focus();
-    return true;
+    return { added, skipped, firstError };
   }
 
   protected remove(id: string): void {
@@ -124,16 +124,21 @@ export class HomeComponent {
   }
 
   protected fetch(): void {
-    if (this.draft().trim().length > 0) {
-      const ok = this.addFromDraft();
-      if (!ok) return;
+    const draftParsed = this.parseDraft();
+    if (draftParsed.skipped.length > 0) {
+      this.draftError.set(draftParsed.firstError);
+      this.urlBar()?.focus();
+      return;
     }
 
-    const entries = this.links();
+    const entries = [...this.links(), ...draftParsed.added];
     if (entries.length === 0) return;
 
+    this.draftError.set(null);
     this.fetchError.set(null);
-    this.links.set(entries.map(({ failed: _failed, ...rest }) => rest));
+    if (this.links().length > 0) {
+      this.links.update((list) => list.map(({ failed: _failed, ...rest }) => rest));
+    }
     this.fetching.set(true);
 
     this.fetchInfo.load(entries.map((e) => e.url)).subscribe({

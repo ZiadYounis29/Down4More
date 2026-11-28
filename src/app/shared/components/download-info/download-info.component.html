@@ -1,8 +1,17 @@
 @if (variant() === 'small') {
   <!-- Small variant: compact row with progress bar -->
-  <div class="di-small">
-    @if (selectable()) {
-      <d4m-checkbox [(value)]="selected" [label]="item().title" />
+  <div
+    class="di-small"
+    [class.di-small--selectable]="selectable()"
+    [class.di-small--selected]="selectable() && selected()"
+    [attr.tabindex]="selectable() ? 0 : null"
+    [attr.aria-selected]="selectable() ? selected() : null"
+    (click)="onRowClick()"
+    (keydown.enter)="onRowClick()"
+    (keydown.space)="$event.preventDefault(); onRowClick()"
+  >
+    @if (selectable() && showCheckbox()) {
+      <d4m-checkbox [presentational]="true" [value]="selected()" [label]="item().title" />
     }
     <div class="di-small__thumb">
       <d4m-thumb-box [src]="item().thumbnailUrl" size="row" [alt]="item().title" />
@@ -55,35 +64,35 @@
         <button type="button" class="btn btn--icon btn--sm"
           [attr.aria-label]="'Pause ' + item().title"
           [title]="'Pause ' + item().title"
-          (click)="emit('pause')">
+          (click)="emit('pause', $event)">
           <d4m-icon name="pause" [size]="14" />
         </button>
       }
       @if (canResume()) {
         <button type="button" class="btn btn--icon btn--sm"
           [attr.aria-label]="'Resume ' + item().title"
-          (click)="emit('resume')">
+          (click)="emit('resume', $event)">
           <d4m-icon name="play" [size]="14" />
         </button>
       }
       @if (canCancel()) {
         <button type="button" class="btn btn--icon btn--sm"
           [attr.aria-label]="'Cancel ' + item().title"
-          (click)="emit('cancel')">
+          (click)="emit('cancel', $event)">
           <d4m-icon name="x" [size]="14" />
         </button>
       }
       @if (canRetry()) {
         <button type="button" class="btn btn--icon btn--sm"
           [attr.aria-label]="'Retry ' + item().title"
-          (click)="emit('retry')">
+          (click)="emit('retry', $event)">
           <d4m-icon name="retry" [size]="14" />
         </button>
       }
       @if (canDismiss()) {
         <button type="button" class="btn btn--icon btn--sm"
           aria-label="Dismiss"
-          (click)="emit('dismiss')">
+          (click)="emit('dismiss', $event)">
           <d4m-icon name="x" [size]="14" />
         </button>
       }

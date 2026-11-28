@@ -1,12 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { NavigationService } from '@core/services/navigation.service';
 import { ThemeService } from '@core/services/theme.service';
 import { NavBarComponent } from './nav-bar.component';
 
 @Component({ standalone: true, template: '<d4m-nav-bar />', imports: [NavBarComponent] })
 class HostComponent {}
+
+const mockNav = { back: vi.fn(), returnToFlow: vi.fn() };
 
 describe('NavBarComponent', () => {
   beforeEach(async () => {
@@ -20,6 +23,7 @@ describe('NavBarComponent', () => {
           { path: 'history', component: HostComponent },
           { path: 'settings', component: HostComponent },
         ]),
+        { provide: NavigationService, useValue: mockNav },
       ],
     }).compileComponents();
   });

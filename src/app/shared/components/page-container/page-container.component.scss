@@ -47,6 +47,10 @@
   display: none;
 }
 
+.card__footer:not(:empty) {
+  margin-top: 20px;
+}
+
 .card__split {
   display: flex;
   flex-wrap: wrap;

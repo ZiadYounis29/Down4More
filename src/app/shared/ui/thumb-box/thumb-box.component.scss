@@ -1,6 +1,11 @@
 :host {
   display: inline-flex;
   flex-shrink: 0;
+
+  &:has(.thumb--preview) {
+    display: flex;
+    width: 100%;
+  }
 }
 
 .thumb {

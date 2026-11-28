@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { DownloadService } from './download.service';
 import { ApiService } from './api.service';
+import { NavigationService } from './navigation.service';
 import {
   DownloadAction,
   DownloadRequest,
@@ -37,6 +38,7 @@ const ITEM: MediaItem = {
 
 let startDownloadsMock = vi.fn();
 let controlMock = vi.fn();
+let resetFlowMock = vi.fn();
 
 describe('DownloadService', () => {
   let service!: DownloadService;
@@ -44,9 +46,11 @@ describe('DownloadService', () => {
   beforeEach(() => {
     startDownloadsMock = vi.fn().mockReturnValue(of(undefined));
     controlMock = vi.fn().mockReturnValue(of(undefined));
+    resetFlowMock = vi.fn();
     TestBed.configureTestingModule({
       providers: [
         DownloadService,
+        { provide: NavigationService, useValue: { resetFlow: resetFlowMock } },
         {
           provide: ApiService,
           useFactory: () =>
@@ -60,10 +64,11 @@ describe('DownloadService', () => {
     service = TestBed.inject(DownloadService);
   });
 
-  it('start forwards to api.startDownloads', () => {
+  it('start forwards to api.startDownloads and resets flow', () => {
     const request: DownloadRequest = { item: ITEM, settings: SETTINGS };
     service.start([request]).subscribe();
     expect(startDownloadsMock).toHaveBeenCalledWith([request]);
+    expect(resetFlowMock).toHaveBeenCalledTimes(1);
   });
 
   it('control forwards pause to api.control', () => {

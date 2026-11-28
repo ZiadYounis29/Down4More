@@ -1,13 +1,15 @@
 @if (selectable()) {
   <div class="header">
-    <button
-      type="button"
-      class="btn btn--sm btn--ghost"
-      [attr.aria-pressed]="allSelected()"
-      (click)="toggleSelectAll()"
-    >
-      {{ selectAllLabel() }}
-    </button>
+    @if (!singleSelect()) {
+      <button
+        type="button"
+        class="btn btn--sm btn--ghost"
+        [attr.aria-pressed]="allSelected()"
+        (click)="toggleSelectAll()"
+      >
+        {{ selectAllLabel() }}
+      </button>
+    }
     <ng-content select="[toolbar]" />
     <span class="summary" aria-live="polite">{{ summaryText() }}</span>
   </div>
@@ -38,7 +40,6 @@
     @if (virtualScroll()) {
       <cdk-virtual-scroll-viewport
         class="viewport"
-        [class.viewport--scrollable]="isScrollable()"
         [itemSize]="itemSize()"
         [style.height.px]="listHeight()"
         (scroll)="onScroll()"
@@ -58,7 +59,6 @@
       <div
         #plainList
         class="viewport viewport--plain"
-        [class.viewport--scrollable]="isScrollable()"
         [style.height.px]="listHeight()"
         (scroll)="onScroll()"
       >

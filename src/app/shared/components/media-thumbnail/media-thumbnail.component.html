@@ -8,20 +8,34 @@
     </div>
   </div>
 } @else if (variant() === 'single') {
-  <!-- Single variant: thumb above, detail block below -->
+  <!-- Single variant: thumb + channel/size/duration on top, Video: title at bottom -->
   <div class="mt-single">
-    <d4m-thumb-box
-      [src]="item().thumbnailUrl"
-      size="single"
-      [alt]="item().title"
-    />
-    <div class="mt-single__detail">
-      <p class="mt-single__title" [title]="item().title">{{ item().title }}</p>
-      @if (item().channelName) {
-        <p class="mt-single__meta">{{ item().channelName }}</p>
-      }
-      <p class="mt-single__meta">{{ displaySize() }} · {{ displayDuration() }}</p>
+    <div class="mt-single__top">
+      <d4m-thumb-box
+        [src]="item().thumbnailUrl"
+        size="single"
+        [alt]="item().title"
+      />
+      <div class="mt-single__info">
+        <div class="mt-single__field">
+          <span class="mt-single__label">Channel name</span>
+          <span class="mt-single__value">{{ item().channelName || '—' }}</span>
+        </div>
+        <div class="mt-single__h-divider" aria-hidden="true"></div>
+        <div class="mt-single__stats">
+          <div class="mt-single__field">
+            <span class="mt-single__label">File size</span>
+            <span class="mt-single__value">{{ displaySize() }}</span>
+          </div>
+          <div class="mt-single__v-divider" aria-hidden="true"></div>
+          <div class="mt-single__field">
+            <span class="mt-single__label">Duration</span>
+            <span class="mt-single__value">{{ displayDuration() }}</span>
+          </div>
+        </div>
+      </div>
     </div>
+    <p class="mt-single__title" [title]="item().title">Video: {{ item().title }}</p>
   </div>
 } @else {
   <!-- Row variants: pre-select and option-select -->

@@ -27,6 +27,21 @@
 
 .di-small {
   @extend .di-row;
+  transition: border-color 0.15s;
+
+  &--selectable {
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  &--selected {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-selected) 100%, transparent);
+  }
 }
 
 .di-small__thumb {
@@ -124,6 +139,8 @@
 }
 
 .di-big__preview {
+  display: flex;
+  width: 100%;
   flex: none;
 }
 

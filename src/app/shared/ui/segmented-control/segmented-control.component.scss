@@ -5,8 +5,15 @@
 .group {
   display: flex;
   flex-wrap: wrap;
+  align-items: stretch;
   justify-content: center;
   gap: 10px;
+}
+
+.group__divider {
+  width: 1px;
+  background: var(--color-border);
+  align-self: stretch;
 }
 
 .pill:focus-visible {

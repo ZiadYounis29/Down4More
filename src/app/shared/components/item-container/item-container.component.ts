@@ -3,10 +3,12 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   computed,
   contentChild,
   effect,
+  inject,
   input,
   model,
   output,
@@ -27,9 +29,11 @@ export class ItemContainerComponent<T> {
   readonly items = input.required<T[]>();
   readonly itemId = input<(item: T) => string>((item) => (item as { id: string }).id);
   readonly selectable = input(false);
+  readonly singleSelect = input(false);
   readonly selectedIds = model<string[]>([]);
   readonly virtualScroll = input(true);
   readonly visibleRows = input(5);
+  readonly compactRows = input<number | null>(null);
   readonly rowHeight = input(82);
   readonly rowGap = input(10);
   readonly heightMode = input<'fixed' | 'fit'>('fixed');
@@ -49,17 +53,26 @@ export class ItemContainerComponent<T> {
   protected readonly scrollThumbHeight = signal(0);
   protected readonly isScrollable = signal(false);
   protected readonly isDragging = signal(false);
+  private readonly isCompact = signal(false);
 
   private dragStartY = 0;
   private dragStartScrollTop = 0;
 
   protected readonly itemSize = computed(() => this.rowHeight() + this.rowGap());
 
+  protected readonly effectiveVisibleRows = computed(() => {
+    const compact = this.compactRows();
+    return this.isCompact() && compact !== null
+      ? Math.min(this.visibleRows(), compact)
+      : this.visibleRows();
+  });
+
   protected readonly listHeight = computed(() => {
+    const cap = this.effectiveVisibleRows();
     const rows =
       this.heightMode() === 'fit'
-        ? Math.min(this.visibleRows(), Math.max(1, this.items().length))
-        : this.visibleRows();
+        ? Math.min(cap, Math.max(1, this.items().length))
+        : cap;
     return rows * this.rowHeight() + Math.max(0, rows - 1) * this.rowGap() + 4;
   });
 
@@ -87,6 +100,14 @@ export class ItemContainerComponent<T> {
   });
 
   constructor() {
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+      const mq = window.matchMedia('(max-width: 720px)');
+      this.isCompact.set(mq.matches);
+      const onChange = (e: MediaQueryListEvent) => this.isCompact.set(e.matches);
+      mq.addEventListener('change', onChange);
+      inject(DestroyRef).onDestroy(() => mq.removeEventListener('change', onChange));
+    }
+
     effect(() => {
       const list = this.items();
       const idFn = this.itemId();
@@ -98,10 +119,26 @@ export class ItemContainerComponent<T> {
       }
     });
 
-    effect(() => {
+    effect((onCleanup) => {
+      const vp = this.viewportRef();
+      const plain = this.plainListRef();
       this.items();
       this.listHeight();
-      queueMicrotask(() => this.syncScrollRail());
+
+      queueMicrotask(() => {
+        vp?.checkViewportSize();
+        this.syncScrollRail();
+      });
+
+      const el = vp?.elementRef.nativeElement ?? plain?.nativeElement;
+      if (el && typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => this.syncScrollRail());
+        ro.observe(el);
+        for (const child of Array.from(el.children)) {
+          ro.observe(child);
+        }
+        onCleanup(() => ro.disconnect());
+      }
     });
   }
 
@@ -127,6 +164,9 @@ export class ItemContainerComponent<T> {
     this.selectedIds.update((ids) => {
       if (ids.includes(id)) {
         return ids.filter((existing) => existing !== id);
+      }
+      if (this.singleSelect()) {
+        return [id];
       }
       return [...ids, id];
     });

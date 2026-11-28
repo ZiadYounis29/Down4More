@@ -160,6 +160,26 @@ describe('DownloadInfoComponent', () => {
     expect(component['clampedProgress']()).toBe(100);
   });
 
+  it('clicking anywhere on selectable small row toggles selected without firing on action button click', () => {
+    const f = TestBed.createComponent(DownloadInfoComponent);
+    f.componentRef.setInput('variant', 'small');
+    f.componentRef.setInput('item', makeItem({ status: 'downloading' }));
+    f.componentRef.setInput('selectable', true);
+    f.detectChanges();
+
+    const row = f.nativeElement.querySelector('.di-small') as HTMLElement;
+    row.click();
+    f.detectChanges();
+    expect(f.componentInstance.selected()).toBe(true);
+    expect(row.classList.contains('di-small--selected')).toBe(true);
+
+    // Clicking Pause should not toggle selection
+    const pauseBtn = f.nativeElement.querySelector('.di-small__actions button') as HTMLButtonElement;
+    pauseBtn.click();
+    f.detectChanges();
+    expect(f.componentInstance.selected()).toBe(true);
+  });
+
   it('audio-only mode shows "Audio" for quality in history', () => {
     const f = create('history', makeItem({
       status: 'done',

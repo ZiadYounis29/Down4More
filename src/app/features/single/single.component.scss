@@ -66,9 +66,13 @@
   align-self: start;
 }
 
-.fs-on .area-bitrate,
+.fs-on ::ng-deep .area-bitrate {
+  align-self: start;
+}
+
 .fs-on .a-download {
   align-self: start;
+  margin-top: 12px;
 }
 
 @include compact {
@@ -125,6 +129,7 @@
 
   .a-download {
     justify-self: stretch;
+    margin-top: 0;
   }
 }
 

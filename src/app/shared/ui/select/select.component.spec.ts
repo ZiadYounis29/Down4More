@@ -81,4 +81,30 @@ describe('SelectComponent', () => {
     fixture.detectChanges();
     expect(component.value()).toBe('mp4');
   });
+
+  it('opens custom menu on trigger click and updates value on option click', async () => {
+    await TestBed.configureTestingModule({
+      imports: [SelectComponent],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(SelectComponent<string>);
+    fixture.componentRef.setInput('options', [
+      { value: '1080p', label: '1080p' },
+      { value: '720p', label: '720p' },
+    ]);
+    fixture.componentRef.setInput('value', '1080p');
+    fixture.detectChanges();
+
+    const trigger = fixture.nativeElement.querySelector('button.select') as HTMLButtonElement;
+    trigger.click();
+    fixture.detectChanges();
+
+    const opts = fixture.nativeElement.querySelectorAll('.select-option') as NodeListOf<HTMLButtonElement>;
+    expect(opts.length).toBe(2);
+    opts[1].click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.value()).toBe('720p');
+    expect(fixture.nativeElement.querySelector('.select-menu')).toBeNull();
+  });
 });

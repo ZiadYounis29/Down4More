@@ -61,7 +61,12 @@ describe('HomeComponent', () => {
 
     const fetchBtn = fixture.nativeElement.querySelector('d4m-nav-buttons button') as HTMLButtonElement;
     fetchBtn.click();
+    fixture.detectChanges();
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/single']);
+    // Fetching from the input box without clicking '+' does not add to the list below,
+    // and keeps the link in the input bar when returning to Home
+    expect(fixture.nativeElement.querySelectorAll('ul.list li.row')).toHaveLength(0);
+    expect(input.value).toBe('https://youtube.com/watch?v=abc');
 
     const playlistRes: FetchResult = {
       kind: 'playlist',
@@ -90,8 +95,11 @@ describe('HomeComponent', () => {
     const fixture = TestBed.createComponent(HomeComponent);
     fixture.detectChanges();
     const input = fixture.nativeElement.querySelector('input[aria-label="Link"]') as HTMLInputElement;
+    const plus = fixture.nativeElement.querySelector('button[aria-label="Add link"]') as HTMLButtonElement;
     input.value = 'https://example.com/fail';
     input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    plus.click();
     fixture.detectChanges();
 
     const fetchBtn = fixture.nativeElement.querySelector('d4m-nav-buttons button') as HTMLButtonElement;

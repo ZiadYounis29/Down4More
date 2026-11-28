@@ -5,6 +5,7 @@ export type IconName =
   | 'x'
   | 'pause'
   | 'play'
+  | 'skip-back'
   | 'check'
   | 'retry'
   | 'arrow-down'
@@ -41,6 +42,9 @@ const ICONS: Record<IconName, IconDefinition> = {
   play: {
     filled: true,
     paths: ['M7 5l12 7-12 7V5z'],
+  },
+  'skip-back': {
+    paths: ['M19 20L9 12l10-8v16z', 'M5 19V5'],
   },
   check: {
     paths: ['M5 12.5l4.5 4.5L19 7.5'],

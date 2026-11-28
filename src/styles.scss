@@ -198,6 +198,14 @@
   box-sizing: border-box;
 }
 
+html {
+  zoom: 1.2;
+
+  @include compact {
+    zoom: 1;
+  }
+}
+
 body {
   margin: 0;
   font-family: var(--font-body);

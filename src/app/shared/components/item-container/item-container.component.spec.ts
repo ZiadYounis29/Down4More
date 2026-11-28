@@ -14,8 +14,10 @@ interface TestItem {
     <d4m-item-container
       [items]="items()"
       [selectable]="selectable()"
+      [singleSelect]="singleSelect()"
       [(selectedIds)]="selectedIds"
       [visibleRows]="visibleRows()"
+      [compactRows]="compactRows()"
       [virtualScroll]="virtualScroll()"
       [noSelectionMeansAll]="noSelectionMeansAll()"
       [summary]="summary()"
@@ -36,8 +38,10 @@ class TestHostComponent {
     { id: '3', title: 'Three' },
   ]);
   readonly selectable = signal(true);
+  readonly singleSelect = signal(false);
   readonly selectedIds = signal<string[]>([]);
   readonly visibleRows = signal(5);
+  readonly compactRows = signal<number | null>(null);
   readonly virtualScroll = signal(false);
   readonly noSelectionMeansAll = signal(false);
   readonly summary = signal<string | null>(null);
@@ -60,6 +64,30 @@ describe('ItemContainerComponent', () => {
     fixture.detectChanges();
     body = fixture.nativeElement.querySelector('.body') as HTMLElement;
     expect(body.style.height).toBe('730px'); // 8*82 + 7*10 + 4
+  });
+
+  it('caps visible rows to compactRows when set in phone/compact mode', () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }) as unknown as typeof window.matchMedia;
+
+    try {
+      const fixture = TestBed.createComponent(TestHostComponent);
+      fixture.componentInstance.visibleRows.set(5);
+      fixture.detectChanges();
+      const body = fixture.nativeElement.querySelector('.body') as HTMLElement;
+      // Default compactRows is null -> keeps visibleRows (5)
+      expect(body.style.height).toBe('454px');
+
+      fixture.componentInstance.compactRows.set(3);
+      fixture.detectChanges();
+      expect(body.style.height).toBe('270px'); // 3*82 + 2*10 + 4
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
   });
 
   it('hides header when selectable=false', () => {
@@ -120,6 +148,27 @@ describe('ItemContainerComponent', () => {
     fixture.componentInstance.items.set([]);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.empty-msg')?.textContent).toBe('Nothing here');
+  });
+
+  it('singleSelect hides select-all and allows only 1 item selected at a time', () => {
+    const fixture = TestBed.createComponent(TestHostComponent);
+    fixture.componentInstance.singleSelect.set(true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.header button')).toBeNull();
+
+    const rows = fixture.nativeElement.querySelectorAll('.test-row') as NodeListOf<HTMLButtonElement>;
+    rows[0].click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.selectedIds()).toEqual(['1']);
+
+    rows[1].click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.selectedIds()).toEqual(['2']);
+
+    rows[1].click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.selectedIds()).toEqual([]);
   });
 
   it('renders 1000 items with virtualScroll=true without freezing', () => {

@@ -1,4 +1,9 @@
 <div class="shell">
   <d4m-nav-bar />
   <main class="shell__main"><router-outlet /></main>
+  @if (nav.showBack()) {
+    <div class="shell__back">
+      <d4m-nav-buttons [buttons]="backButtons" (pressed)="nav.back()" />
+    </div>
+  }
 </div>

@@ -1,9 +1,9 @@
 @use 'styles/breakpoints' as *;
 
 .shell {
-  min-height: 100vh;
+  min-height: calc(100vh / 1.2);
   box-sizing: border-box;
-  padding: 20px 32px 48px;
+  padding: 20px 32px 76px;
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
@@ -13,8 +13,21 @@
   margin-top: 28px;
 }
 
+.shell__back {
+  position: fixed;
+  left: 32px;
+  bottom: 24px;
+  z-index: 20;
+}
+
 @include compact {
   .shell {
-    padding: 16px 16px 32px;
+    min-height: 100vh;
+    padding: 16px 16px 72px;
+  }
+
+  .shell__back {
+    left: 16px;
+    bottom: 16px;
   }
 }

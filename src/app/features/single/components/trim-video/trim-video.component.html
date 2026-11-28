@@ -9,34 +9,61 @@
     <div class="left">
       <div class="segments">
         <div class="rail" aria-hidden="true">
-          <div class="rail-dot" [style.top]="railDotTop()"></div>
+          <div
+            class="rail-dot"
+            [style.top]="railDotTop()"
+            [style.background]="railDotColor()"
+          ></div>
         </div>
         <div class="list">
-          @for (seg of displaySegments(); track $index) {
+          <div
+            class="seg-field"
+            [class.seg-field--active]="isAllSelected()"
+            role="button"
+            tabindex="0"
+            (click)="selectSegment(-1)"
+            (keydown.enter)="selectSegment(-1)"
+            (keydown.space)="selectSegment(-1)"
+          >
+            <span class="seg-field__label">All segments</span>
+          </div>
+
+          @for (seg of segments(); track $index) {
             <div
               class="seg-field"
               [class.seg-field--active]="activeIndex() === $index"
               [class.seg-field--invalid]="seg.startSec >= seg.endSec"
+              [style.border-color]="seg.startSec >= seg.endSec ? null : segmentColor($index)"
               role="button"
               tabindex="0"
               (click)="selectSegment($index)"
               (keydown.enter)="selectSegment($index)"
               (keydown.space)="selectSegment($index)"
             >
-              <span class="seg-field__label">{{ seg.label }}</span>
+              <span class="seg-field__label">Segment {{ $index + 1 }}</span>
               <span class="seg-field__range">
-                {{ formatTime(seg.startSec) }} to {{ formatTime(seg.endSec) }}
+                <d4m-time-shift-input
+                  [value]="seg.startSec"
+                  [maxSec]="maxSec()"
+                  [ariaLabel]="'Segment ' + ($index + 1) + ' start time'"
+                  (valueChange)="onSegmentTimeChange($index, 'start', $event)"
+                />
+                <span>to</span>
+                <d4m-time-shift-input
+                  [value]="seg.endSec"
+                  [maxSec]="maxSec()"
+                  [ariaLabel]="'Segment ' + ($index + 1) + ' end time'"
+                  (valueChange)="onSegmentTimeChange($index, 'end', $event)"
+                />
               </span>
-              @if (displaySegments().length > 1) {
-                <button
-                  type="button"
-                  class="seg-field__remove"
-                  [attr.aria-label]="'Remove segment ' + ($index + 1)"
-                  (click)="removeSegment($index, $event)"
-                >
-                  <d4m-icon name="x" [size]="14" />
-                </button>
-              }
+              <button
+                type="button"
+                class="seg-field__remove"
+                [attr.aria-label]="'Remove segment ' + ($index + 1)"
+                (click)="removeSegment($index, $event)"
+              >
+                <d4m-icon name="x" [size]="14" />
+              </button>
             </div>
           }
 
@@ -53,45 +80,93 @@
     </div>
 
     <div class="right">
-      <div class="preview" aria-hidden="true">
-        <d4m-icon name="play" [size]="44" />
+      <div class="preview" aria-hidden="true" (click)="togglePlay()">
+        <d4m-icon [name]="playing() ? 'pause' : 'play'" [size]="44" />
+      </div>
+
+      <div class="controls">
+        <button
+          type="button"
+          class="btn btn--ghost btn--sm ctrl-btn"
+          (click)="playFromStart()"
+        >
+          <d4m-icon name="skip-back" [size]="15" />
+          <span>Play from start</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn btn--ghost btn--sm ctrl-btn"
+          (click)="togglePlay()"
+        >
+          <d4m-icon [name]="playing() ? 'pause' : 'play'" [size]="15" />
+          <span>{{ playing() ? 'Pause' : 'Play' }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="btn btn--ghost btn--sm ctrl-btn"
+          (click)="startFromCurrent()"
+        >
+          <d4m-icon name="play" [size]="15" />
+          <span>Start from current</span>
+        </button>
+
+        <span class="controls__time">{{ formatTime(currentTimeSec()) }}</span>
       </div>
 
       <div class="timeline">
-        <span class="lab">{{ formatTime(activeSegment().startSec) }}</span>
-        <div class="track" #track>
-          <div
-            class="knob start"
-            [class.knob--dragging]="dragging() === 'start'"
-            [style.left.%]="startPercent()"
-            role="slider"
-            tabindex="0"
-            aria-label="Segment start"
-            [attr.aria-valuemin]="0"
-            [attr.aria-valuemax]="activeSegment().endSec - 1"
-            [attr.aria-valuenow]="activeSegment().startSec"
-            (keydown)="onKnobKeyDown('start', $event)"
-            (pointerdown)="onKnobPointerDown('start', $event)"
-            (pointermove)="onKnobPointerMove('start', $event)"
-            (pointerup)="onKnobPointerUp('start', $event)"
-          ></div>
-          <div
-            class="knob end"
-            [class.knob--dragging]="dragging() === 'end'"
-            [style.left.%]="endPercent()"
-            role="slider"
-            tabindex="0"
-            aria-label="Segment end"
-            [attr.aria-valuemin]="activeSegment().startSec + 1"
-            [attr.aria-valuemax]="maxSec()"
-            [attr.aria-valuenow]="activeSegment().endSec"
-            (keydown)="onKnobKeyDown('end', $event)"
-            (pointerdown)="onKnobPointerDown('end', $event)"
-            (pointermove)="onKnobPointerMove('end', $event)"
-            (pointerup)="onKnobPointerUp('end', $event)"
-          ></div>
+        <span class="lab">{{ timelineStartLabel() }}</span>
+        <div class="track" #track (click)="onTrackClick($event)">
+          <div class="playhead" [style.left.%]="playheadPercent()" aria-hidden="true"></div>
+          @for (seg of timelineSegments(); track seg.index) {
+            <div
+              class="track__range"
+              [style.left.%]="seg.startPct"
+              [style.width.%]="seg.endPct - seg.startPct"
+              [style.background]="seg.color"
+            ></div>
+            <div
+              class="knob start"
+              [class.knob--dragging]="dragging()?.segIndex === seg.index && dragging()?.which === 'start'"
+              [style.left.%]="seg.startPct"
+              [style.background]="seg.color"
+              role="slider"
+              tabindex="0"
+              [attr.aria-label]="seg.label + ' start'"
+              [attr.aria-valuemin]="0"
+              [attr.aria-valuemax]="seg.endSec - 1"
+              [attr.aria-valuenow]="seg.startSec"
+              (keydown)="onKnobKeyDown(seg.index, 'start', $event)"
+              (pointerdown)="onKnobPointerDown(seg.index, 'start', $event)"
+              (pointermove)="onKnobPointerMove(seg.index, 'start', $event)"
+              (pointerup)="onKnobPointerUp(seg.index, 'start', $event)"
+              (pointercancel)="onKnobPointerUp(seg.index, 'start', $event)"
+            >
+              <span class="knob__tag" [style.color]="seg.color">{{ seg.shortLabel }}</span>
+            </div>
+            <div
+              class="knob end"
+              [class.knob--dragging]="dragging()?.segIndex === seg.index && dragging()?.which === 'end'"
+              [style.left.%]="seg.endPct"
+              [style.background]="seg.color"
+              role="slider"
+              tabindex="0"
+              [attr.aria-label]="seg.label + ' end'"
+              [attr.aria-valuemin]="seg.startSec + 1"
+              [attr.aria-valuemax]="maxSec()"
+              [attr.aria-valuenow]="seg.endSec"
+              (keydown)="onKnobKeyDown(seg.index, 'end', $event)"
+              (pointerdown)="onKnobPointerDown(seg.index, 'end', $event)"
+              (pointermove)="onKnobPointerMove(seg.index, 'end', $event)"
+              (pointerup)="onKnobPointerUp(seg.index, 'end', $event)"
+              (pointercancel)="onKnobPointerUp(seg.index, 'end', $event)"
+            >
+              <span class="knob__tag" [style.color]="seg.color">{{ seg.shortLabel }}</span>
+            </div>
+          }
         </div>
-        <span class="lab">{{ formatTime(activeSegment().endSec) }}</span>
+        <span class="lab">{{ timelineEndLabel() }}</span>
       </div>
     </div>
   </div>

@@ -54,9 +54,15 @@ describe('DownloadsComponent', () => {
     pauseAllBtn.click();
     expect(controlSpy).toHaveBeenCalledWith('pause', expect.any(Array));
 
-    // Select all visible items via header button and trigger Priority
-    const selectAllBtn = fixture.nativeElement.querySelector('.header button') as HTMLButtonElement;
-    selectAllBtn.click();
+    // No Select all button or checkboxes in single-select mode
+    expect(fixture.nativeElement.querySelector('d4m-download-info d4m-checkbox')).toBeNull();
+    const selectAllBtn = Array.from(
+      fixture.nativeElement.querySelectorAll('.header > button'),
+    );
+    expect(selectAllBtn.length).toBe(0);
+
+    // Select an item and trigger Priority
+    fixture.componentInstance['selectedIds'].set([MOCK_DOWNLOADS[0].id]);
     fixture.detectChanges();
 
     const priorityBtn = Array.from(
@@ -65,7 +71,7 @@ describe('DownloadsComponent', () => {
     priorityBtn.click();
     expect(controlSpy).toHaveBeenCalledWith(
       'prioritize',
-      expect.arrayContaining([MOCK_DOWNLOADS[0].id]),
+      [MOCK_DOWNLOADS[0].id],
     );
   });
 

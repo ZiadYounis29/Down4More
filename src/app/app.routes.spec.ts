@@ -107,7 +107,7 @@ describe('App end-to-end routes and flows', () => {
     expect(state.items()).toHaveLength(9);
 
     const nextBtn = harness.routeNativeElement!.querySelector(
-      'd4m-nav-buttons button',
+      'd4m-nav-buttons .nb__group--end button',
     ) as HTMLButtonElement;
     await waitForNav(router, () => {
       nextBtn.click();

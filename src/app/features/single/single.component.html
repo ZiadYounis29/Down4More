@@ -18,7 +18,12 @@
 
     <d4m-download-options layout="contents" [(settings)]="settings" [catalog]="catalog()" />
 
-    <d4m-frame-size class="a-framesize" [(open)]="frameSizeOn" />
+    <d4m-frame-size
+      class="a-framesize"
+      [(open)]="frameSizeOn"
+      [(value)]="frameSize"
+      [thumbnailUrl]="item().thumbnailUrl"
+    />
 
     <d4m-trim-video
       class="a-trim"
@@ -38,4 +43,5 @@
   @if (error()) {
     <p class="single__error" role="alert">{{ error() }}</p>
   }
+
 </d4m-page-container>

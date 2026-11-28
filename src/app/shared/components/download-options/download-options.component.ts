@@ -24,6 +24,10 @@ export type DownloadOptionsLayout = 'stacked' | 'contents';
   templateUrl: './download-options.component.html',
   styleUrl: './download-options.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.layout-stacked]': 'layout() === "stacked"',
+    '[class.layout-contents]': 'layout() === "contents"',
+  },
 })
 export class DownloadOptionsComponent {
   readonly settings = model.required<DownloadSettings>();

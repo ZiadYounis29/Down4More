@@ -41,7 +41,6 @@ import { UrlBarComponent } from '@features/home/components/url-bar';
     </section>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, UrlBarComponent],
 })
 export class UrlBarDemoComponent {
   protected readonly emptyVal = signal('');

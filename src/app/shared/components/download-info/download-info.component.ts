@@ -33,6 +33,9 @@ export class DownloadInfoComponent {
   readonly variant = input.required<'small' | 'big' | 'history'>();
 
   /** Whether to show a checkbox (small variant). */
+  readonly showCheckbox = input(true);
+
+  /** Whether this row is selectable (small variant). */
   readonly selectable = input(false);
 
   /** Whether this row is selected. */
@@ -145,7 +148,13 @@ export class DownloadInfoComponent {
 
   // ── Event emitters ──────────────────────────────────────────────────────────
 
-  protected emit(type: DownloadActionEvent['type']): void {
+  protected onRowClick(): void {
+    if (!this.selectable()) return;
+    this.selected.set(!this.selected());
+  }
+
+  protected emit(type: DownloadActionEvent['type'], event?: Event): void {
+    event?.stopPropagation();
     this.action.emit({ type, id: this.item().id });
   }
 }

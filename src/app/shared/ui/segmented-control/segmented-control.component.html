@@ -1,5 +1,8 @@
 <div class="group" role="group" [attr.aria-label]="label() || null">
   @for (option of options(); track $index) {
+    @if ($index > 0) {
+      <div class="group__divider" aria-hidden="true"></div>
+    }
     <button
       type="button"
       class="pill"

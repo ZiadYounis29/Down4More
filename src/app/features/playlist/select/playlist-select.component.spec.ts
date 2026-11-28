@@ -34,7 +34,7 @@ describe('PlaylistSelectComponent', () => {
     fixture.detectChanges();
 
     expect(state.chosenIds()).toHaveLength(9);
-    const nextBtn = fixture.nativeElement.querySelector('d4m-nav-buttons button') as HTMLButtonElement;
+    const nextBtn = fixture.nativeElement.querySelector('d4m-nav-buttons .nb__group--end button') as HTMLButtonElement;
     expect(nextBtn.disabled).toBe(false);
 
     nextBtn.click();

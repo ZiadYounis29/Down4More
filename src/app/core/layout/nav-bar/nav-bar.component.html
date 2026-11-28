@@ -4,7 +4,13 @@
   </a>
   <div class="bar__right">
     @for (item of items(); track item.path) {
-      <a class="nl" [routerLink]="item.path" routerLinkActive="on" ariaCurrentWhenActive="page">
+      <a
+        class="nl"
+        [routerLink]="item.path"
+        routerLinkActive="on"
+        ariaCurrentWhenActive="page"
+        (click)="onNavClick(item, $event)"
+      >
         {{ item.label }}
       </a>
     }

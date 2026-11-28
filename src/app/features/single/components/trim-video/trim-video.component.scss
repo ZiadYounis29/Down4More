@@ -6,7 +6,7 @@
 
 .trim {
   display: grid;
-  grid-template-columns: 330px 1fr;
+  grid-template-columns: 380px 1fr;
   gap: 24px;
   align-items: stretch;
   padding: 20px 24px;
@@ -83,6 +83,7 @@
   }
 
   &--active {
+    border-width: 2px;
     border-color: var(--color-primary);
   }
 
@@ -98,13 +99,14 @@
 .seg-field__range {
   flex: 1;
   min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
   font-size: 12px;
   font-weight: 700;
   color: var(--color-text-muted);
-  text-align: right;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .seg-field__remove {
@@ -161,13 +163,60 @@
   background: var(--box-bg);
   color: var(--trim-preview-fg);
   border: var(--trim-preview-border);
+  cursor: pointer;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ctrl-btn {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.controls__time {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-accent);
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 3;
 }
 
 .timeline {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 14px;
-  height: 16px;
+  min-height: 36px;
+}
+
+.lab {
+  flex: none;
+  min-width: 64px;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  line-height: 16px;
+  white-space: nowrap;
+
+  &:last-child {
+    text-align: right;
+  }
 }
 
 .track {
@@ -186,6 +235,15 @@
   }
 }
 
+.track__range {
+  position: absolute;
+  top: 6px;
+  height: 4px;
+  border-radius: 2px;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
 .knob {
   position: absolute;
   top: 1px;
@@ -195,16 +253,30 @@
   background: var(--color-primary);
   transform: translateX(-50%);
   cursor: grab;
+  z-index: 1;
 
   &--dragging {
     cursor: grabbing;
-    background: var(--color-accent);
+    transform: translateX(-50%) scale(1.15);
+    z-index: 2;
   }
 
   &:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
+}
+
+.knob__tag {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 @include compact {

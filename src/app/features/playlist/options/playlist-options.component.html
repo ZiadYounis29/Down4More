@@ -6,6 +6,7 @@
       [items]="state.chosenItems()"
       [selectable]="true"
       [visibleRows]="5"
+      [compactRows]="3"
       selectAllLabel="Global"
       [noSelectionMeansAll]="true"
       [summary]="state.summary()"
@@ -56,4 +57,5 @@
       <p class="opt__message" role="alert">{{ message() }}</p>
     }
   </section>
+
 </d4m-page-container>

@@ -72,18 +72,16 @@
     overflow-y: auto;
   }
 
-  &--scrollable {
-    mask-image: linear-gradient(
-      to bottom,
-      transparent 0,
-      black 14px,
-      black calc(100% - 22px),
-      transparent 100%
-    );
+  ::ng-deep .cdk-virtual-scroll-content-wrapper {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 }
 
 .row-wrap {
+  width: 100%;
+  min-width: 0;
   box-sizing: border-box;
 }
 

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { NavigationService } from '@core/services/navigation.service';
 import { ThemeService } from '@core/services/theme.service';
 import { LogoComponent } from '@shared/components/logo';
 import { IconComponent } from '@shared/ui/icon';
@@ -24,8 +25,18 @@ export const NAV_ITEMS: NavItem[] = [
 })
 export class NavBarComponent {
   readonly items = input<NavItem[]>(NAV_ITEMS);
+  private readonly router = inject(Router);
+  private readonly nav = inject(NavigationService);
   protected readonly theme = inject(ThemeService);
   protected readonly toggleLabel = computed(() =>
     this.theme.theme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme',
   );
+
+  protected onNavClick(item: NavItem, event: Event): void {
+    const current = this.router.url.split('?')[0].split('#')[0] || '/';
+    if (current === item.path) {
+      event.preventDefault();
+      this.nav.returnToFlow();
+    }
+  }
 }
